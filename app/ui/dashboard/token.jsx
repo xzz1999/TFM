@@ -1,23 +1,22 @@
 import React, { useState } from 'react';
-import {Button} from '@/app/ui/button';
-function Token() {
+import { Button } from '@/app/ui/button'; // Asegúrate de que la ruta de importación sea correcta
+
+function Token({ onTokenSubmit }) { // Agrega onTokenSubmit como prop
   const [value, setValue] = useState('');
-  const [error, setError] = useState(''); // Estado para almacenar el mensaje de error
+  const [error, setError] = useState('');
 
   const handleChange = (event) => {
     setValue(event.target.value);
-    if (error) setError(''); // Limpiar el error cuando el usuario comienza a escribir
+    if (error) setError('');
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
     if (!value.trim()) {
-      // Establecer un mensaje de error si el valor es vacío o solo espacios en blanco
       setError('Por favor, introduce un valor antes de enviar.');
     } else {
-      // Aquí puedes manejar el valor introducido, como enviarlo a un servidor
-      alert(`Valor introducido: ${value}`);
-      setValue(''); // Opcional: limpiar el campo después de enviar
+      onTokenSubmit(value); // Llama a la función de callback con el valor del token
+      setValue('');
     }
   };
 
@@ -29,11 +28,8 @@ function Token() {
         value={value}
         onChange={handleChange}
       />
-      <Button className="mt-1 w-18" type='submit'>
-      Enviar  
-    </Button>
-      {error && <div style={{color: 'red'}}>{error}</div>} {/* Mostrar el mensaje de error si existe */}
-      
+      <Button className="mt-1 w-18" type="submit">Enviar</Button>
+      {error && <div style={{ color: 'red' }}>{error}</div>}
     </form>
   );
 }

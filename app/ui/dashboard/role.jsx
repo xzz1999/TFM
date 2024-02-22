@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Button } from '@/app/ui/button';
+import { Button } from '@/app/ui/button'; 
 
-function Role() {
+function Role({ onRoleSubmit }) { // Agrega onRoleSubmit como prop
   const [value, setValue] = useState('');
   const [error, setError] = useState('');
 
@@ -15,7 +15,7 @@ function Role() {
     if (!value.trim()) {
       setError('Por favor, introduce un valor antes de enviar.');
     } else {
-      alert(`Valor introducido: ${value}`);
+      onRoleSubmit(value); // Llama a la función de callback con el valor del rol
       setValue('');
     }
   };
@@ -39,10 +39,7 @@ function Role() {
         value={value}
         onChange={handleChange}
       />
-
-      <Button className="mt-1 w-18" type="submit">
-        Enviar
-      </Button>
+      <Button className="mt-1 w-18" type="submit">Enviar</Button>
       {error && <div style={{ color: 'red' }}>{error}</div>}
     </form>
   );

@@ -7,7 +7,7 @@ import clsx from 'clsx';
 // Asegúrate de definir los enlaces con su respectiva iconografía, nombre y destino (href).
 const links = [
   { name: 'Home', href: '/', icon: HomeIcon },
-  { name: 'Users', href: '/users', icon: UserGroupIcon },
+  { name: 'Chat', href: '/chats', icon: UserGroupIcon },
   { name: 'Documents', href: '/documents', icon: DocumentDuplicateIcon },
 ];
 
