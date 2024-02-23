@@ -4,20 +4,19 @@ import { UserGroupIcon, HomeIcon, DocumentDuplicateIcon } from '@heroicons/react
 import Link from 'next/link';
 import clsx from 'clsx';
 
-// Asegúrate de definir los enlaces con su respectiva iconografía, nombre y destino (href).
 const links = [
   { name: 'Home', href: '/', icon: HomeIcon },
-  { name: 'Chat', href: '/chats', icon: UserGroupIcon },
+  { name: 'Bots', href: '/dashboard/bots', icon: UserGroupIcon },
   { name: 'Documents', href: '/documents', icon: DocumentDuplicateIcon },
 ];
 
 export default function NavLinks() {
-  // Uso de useRouter para obtener el pathname actual
+  
   const { pathname } = useRouter();
   return (
     <>
       {links.map((link) => {
-        const LinkIcon = link.icon; // Asigna el ícono basado en el objeto de enlace actual.
+        const LinkIcon = link.icon; 
         return (
           <Link
             key={link.name} // Usa el nombre como clave única para cada enlace.
@@ -29,8 +28,8 @@ export default function NavLinks() {
               },
             )}
           >
-            <LinkIcon className="w-6" /> {/* Ícono del enlace */}
-            <p className="hidden md:block">{link.name}</p> {/* Nombre del enlace visible solo en pantallas medianas y grandes */}
+            <LinkIcon className="w-6" /> 
+            <p className="hidden md:block">{link.name}</p> 
           </Link>
         );
       })}

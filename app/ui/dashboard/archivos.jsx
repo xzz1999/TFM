@@ -24,8 +24,6 @@
       });
     };
 
-    // No es necesario implementar una función de subida de archivos aquí
-    // ya que los archivos son manejados por el componente padre.
 
     return (
       <div>

@@ -8,7 +8,7 @@
   import Files from '@/app/ui/dashboard/archivos';
   import React, { useState } from 'react'; 
   import { Button } from '@/app/ui/button'; 
-
+  import {isDataNull} from '@/app/lib/actions'
 
 
   const  Page = () => {
@@ -50,15 +50,15 @@
     };
 
     const handleCreate = async () => {
-      // Assuming selectAI, token, name, role, and files are already set in your component's state
-      // and correspond to assistantModel, assistantName, assistantDescription, respectively.
-      console.log("file_id:",files)
       const dataToSend = {
         assistantName: name,
         assistantModel: selectAI,
         assistantDescription: role,
         assistantToken: token
       };
+      const verifier = isDataNull(dataToSend);
+      console.log("verifier:",verifier);
+      if(verifier){
       try {
         // Sube cada archivo y recopila sus referencias (IDs, URLs, etc.)
         const files_ids = [];
@@ -126,7 +126,11 @@
         console.error('Error in handleCreate:', error);
         alert(`Error: ${error.message}`); // Consider using a more user-friendly way to display errors
       }
+    }else{
+      alert("Missing required assistant parameters");
     }
+    }
+  
     
 
     return (
@@ -140,7 +144,7 @@
             Select AI API
           </h2>
           <IA onOptionSelected={handleOptionSelected} />
-          {selectAI && <p>Opción seleccionada: {selectAI.label}</p>}
+          {selectAI && <p>Opción seleccionada: {selectAI}</p>}
           <br></br>
           <h2 className={`${roboto.className} mb-4 text-xl md:text-2xl`}>
             Introduce your IA token

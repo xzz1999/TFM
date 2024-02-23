@@ -3,3 +3,24 @@ export type User = {
   email: string;
   password: string;
 };
+
+export type datafichero = {
+  ficherohash: String,
+  ficheroId: String,
+};
+
+export type dataBot = {
+  Id: String
+  name: String
+  ai: String,
+  token: String,
+  role: String,
+  fileId: string[]
+
+}
+export type dataRequire = {
+  assistantName: String
+  assistantModel: String,
+  assistantDescription: String,
+  assistantToken: String
+};

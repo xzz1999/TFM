@@ -14,6 +14,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { OpenAI } from 'openai';
 const fs = require('fs');
+import { updateBot } from '@/app/lib/actions';
 
 
 
@@ -23,9 +24,6 @@ const fs = require('fs');
         try {
             const { assistantName, assistantModel, assistantDescription, files, assistantToken} = await req.json();
 
-            if (!assistantName || !assistantModel || !assistantDescription || !assistantToken) {
-                throw new Error('Missing required assistant parameters');
-            }
             const openai = new OpenAI({
                 apiKey: assistantToken,
               });
@@ -41,6 +39,20 @@ const fs = require('fs');
 
             const assistant = await openai.beta.assistants.create(assistantOptions);
             const assistantId = assistant.id;
+            const data ={
+                Id: assistant.id,
+                name: assistantName,
+                ai: assistantModel,
+                token: assistantToken,
+                role:assistantDescription,
+                fileId: files
+            }
+            const actualizar = await updateBot(data);
+            if(actualizar){
+                console.log("se ha actualizado el fichero bot");
+            }else{
+                console.log(" no se ha actualizado el fichero bot");
+            }
 
             return NextResponse.json({ 
                 message: 'Assistant created successfully', 
