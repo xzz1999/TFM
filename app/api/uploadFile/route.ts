@@ -43,9 +43,9 @@
     const buffer = Buffer.from(bytes);
     const pathT = `${tmpDir}/${file.name}`;
     const hash = crypto.createHash('sha256').update(buffer).digest('hex');
-    const exist = checkFile(hash);
+    const exist = await checkFile(hash);
     console.log("exist:",exist);
-    if(!exist){
+    if(exist===null){
   
     await writeFile(pathT, buffer);
     console.log(`File written to ${pathT}`);
@@ -60,7 +60,8 @@
 
         const newData  ={
           ficherohash: hash,
-          ficheroId: fileForRetrieval.id
+          ficheroId: fileForRetrieval.id,
+          ficheroName: file.name
   
         }
         const update = await updateJson(newData);

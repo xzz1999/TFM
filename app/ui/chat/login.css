@@ -1,0 +1,64 @@
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f4f7f6;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.login-form {
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    width: 100%;
+    max-width: 400px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 15px;
+    color: #333333;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.form-input, .submit-button {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 2px solid #e1e4e8;
+    border-radius: 8px;
+    box-sizing: border-box; /* Asegura que padding no aumente el tamaño */
+}
+
+.form-input {
+    background-color: #f8f9fa;
+    color: #333333;
+}
+
+.form-input:focus {
+    border-color: #80bdff;
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.submit-button {
+    background-color: #007bff;
+    color: #ffffff;
+    border-color: #007bff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.submit-button:hover {
+    background-color: #0056b3;
+    border-color: #004085;
+}
+
+.form-input:focus, .submit-button:focus {
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}

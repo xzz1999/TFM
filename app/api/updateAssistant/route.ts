@@ -1,6 +1,6 @@
 
 /**
- * API Route - Create Assistant
+ * API Route - Update Assistant
  *
  * This route handles the creation of a new OpenAI assistant. It accepts POST requests
  * with necessary data such as assistant name, model, description, and an optional file ID.
@@ -14,7 +14,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { OpenAI } from 'openai';
 const fs = require('fs');
-import { addBot } from '@/app/lib/actions';
+import { updateBot } from '@/app/lib/actions';
 
 
 
@@ -22,7 +22,7 @@ import { addBot } from '@/app/lib/actions';
   export async function POST(req: NextRequest) {
     if (req.method === 'POST') {
         try {
-            const { assistantName, assistantModel, assistantDescription, files, assistantToken} = await req.json();
+            const { Id,assistantName, assistantModel, assistantDescription, files, assistantToken} = await req.json();
 
             const openai = new OpenAI({
                 apiKey: assistantToken,
@@ -37,8 +37,8 @@ import { addBot } from '@/app/lib/actions';
             };
         
 
-            const assistant = await openai.beta.assistants.create(assistantOptions);
-            const assistantId = assistant.id;
+            const assistant = await openai.beta.assistants.update(Id,assistantOptions);
+            const assistantId = Id
             const data ={
                 Id: assistant.id,
                 name: assistantName,
@@ -47,7 +47,7 @@ import { addBot } from '@/app/lib/actions';
                 role:assistantDescription,
                 fileId: files
             }
-            const actualizar = await addBot(data);
+            const actualizar = await updateBot(assistantId,data);
             if(actualizar){
                 console.log("se ha actualizado el fichero bot");
             }else{

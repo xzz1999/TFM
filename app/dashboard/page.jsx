@@ -61,6 +61,7 @@
       if(verifier){
       try {
         // Sube cada archivo y recopila sus referencias (IDs, URLs, etc.)
+        console.log("files:",files);
         const files_ids = [];
         for (const file of files) {
           const formData = new FormData();

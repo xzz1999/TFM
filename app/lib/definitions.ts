@@ -7,6 +7,7 @@ export type User = {
 export type datafichero = {
   ficherohash: String,
   ficheroId: String,
+  ficheroName: String
 };
 
 export type dataBot = {

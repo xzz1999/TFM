@@ -26,16 +26,23 @@ const BotList = () => {
 
   const handleOptionsToggle = (botId) => {
     setShowOptions(showOptions === botId ? null : botId);
-  };
+  };  
 
   const handleAction = (action, botId) => {
     if (action === 'chat') {
       // Usa el router para navegar a la URL deseada
-      router.push('/chats/${botId}');
-    } else {
-      console.log(action, 'action performed for bot ID:', botId);
-      // Aquí puedes implementar la lógica para manejar las demás acciones
+      console.log(botId);
+      router.push(`/chats/${botId}`);
+      localStorage.setItem('selectedBotId', botId);
+   
+    
+    } else if (action === 'configure'){
+      router.push(`/dashboard/bots/configure/${botId}`)
+      console.log("configurar bot:",botId);
+      localStorage.setItem('selectedBotId', botId);
+
     }
+
   };
 
   return (
@@ -52,7 +59,6 @@ const BotList = () => {
             <div className="options-menu">
               <button onClick={() => handleAction('chat', bot.Id)}>Chat</button>
               <button onClick={() => handleAction('configure', bot.Id)}>Configurar</button>
-              <button onClick={() => handleAction('delete', bot.Id)}>Eliminar</button>
             </div>
           )}
         </div>
