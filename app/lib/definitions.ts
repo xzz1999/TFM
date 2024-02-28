@@ -25,3 +25,8 @@ export type dataRequire = {
   assistantDescription: String,
   assistantToken: String
 };
+
+export type  dataMessage = {
+  threadId: string
+  input: string
+};

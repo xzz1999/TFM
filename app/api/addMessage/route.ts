@@ -15,22 +15,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 export async function POST(req: NextRequest) {
+
+      //extraer la clave de cabecera
+      const apiKey = req.headers.get('key');
+      if (!apiKey) {
+        console.log('No API key provided');
+        return NextResponse.json({ success: false, message: 'API key is required' });
+      }
+  
+      // Inicializar OpenAI
+      const openai = new OpenAI({
+        apiKey: apiKey
+      });
   try {
     // Extract thread ID, input content, and fileIds from JSON data
     const data = await req.json();
     const threadId = data.threadId;
     const input = data.input;
-    const fileIds = data.fileIds; // This is the new line
+  
 
     // Log the received thread ID, input, and fileIds for debugging purposes
     console.log(`inside add_Message -Thread ID: ${threadId}`);
     console.log(`inside add_Message -Input: ${input}`);
-    console.log(`inside add_Message -File IDs: ${fileIds}`); // This is the new line
+ 
 
     // Validate the input data
     if (typeof input !== 'string') {
@@ -42,7 +50,6 @@ export async function POST(req: NextRequest) {
       await openai.beta.threads.messages.create(threadId, {
         role: "user",
         content: input,
-        file_ids: fileIds || [], // This is the new line
       });
       console.log("add_Message successfully");
       return NextResponse.json({ message: "Message created successfully" });

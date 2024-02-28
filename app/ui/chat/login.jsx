@@ -5,7 +5,6 @@ import './login.css';
 export default function Login({ setCorreo }) {
     const handleSubmit = (e) => {
         e.preventDefault();
-        alert(`Correo electrónico ingresado: ${e.target.correo.value}`);
         setCorreo(e.target.correo.value); 
     };
 

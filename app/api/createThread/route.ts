@@ -12,31 +12,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 export async function POST(req: NextRequest) {
   console.log('CREATE THREAD started');
+  
+    //extraer la clave de cabecera
+    const apiKey = req.headers.get('key');
+    if (!apiKey) {
+      console.log('No API key provided');
+      return NextResponse.json({ success: false, message: 'API key is required' });
+    }
+
+
+    const openai = new OpenAI({
+      apiKey: apiKey
+    });
   if (req.method === 'POST') {
+
     try {
-      const data = await req.json();
-      const inputMessage = data.inputmessage;
-
-      // Überprüfen, ob die Eingabemessage vorhanden und ein String ist
-      if (!inputMessage || typeof inputMessage !== 'string') {
-        throw new Error('inputmessage is missing or not a string');
-      }
-
-      // Thread erstellen
-      const thread = await openai.beta.threads.create({
-        messages: [
-          {
-            role: "user",
-            content: inputMessage,
-          },
-        ],
-      });
+      
+  
+      const thread = await openai.beta.threads.create();
       const threadId = thread.id;
       console.log('Thread ID:', threadId);
 
