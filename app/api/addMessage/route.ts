@@ -14,19 +14,30 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from "openai";
+import { botData } from '@/app/lib/actions';
 
 export async function POST(req: NextRequest) {
 
-      //extraer la clave de cabecera
-      const apiKey = req.headers.get('key');
-      if (!apiKey) {
-        console.log('No API key provided');
-        return NextResponse.json({ success: false, message: 'API key is required' });
-      }
+        //extraer la clave de cabecera
+    const botId = req.headers.get('id');
+    //debug
+    console.log("id:", botId);
+    let bot;
+    if(botId){
+      bot = await botData(botId);
+    }
+    // debug
+    console.log("bot:",bot);
+    if (!bot) {
+      console.log('No API key provided');
+      return NextResponse.json({ success: false, message: 'API key is required' });
+    }
+    const token = bot.token;
+    console.log("token:",token);
   
       // Inicializar OpenAI
       const openai = new OpenAI({
-        apiKey: apiKey
+        apiKey: token
       });
   try {
     // Extract thread ID, input content, and fileIds from JSON data

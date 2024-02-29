@@ -183,7 +183,7 @@ export async function getBot () {
 
 
 // funcion que devuelve los datos de un bot identificado por su id
-export async function botData (botId: string){
+export async function botData (botId: string | null){
   try{
  
   const filePath = path.join(process.cwd(),'bots.json');
@@ -200,120 +200,64 @@ export async function botData (botId: string){
   }
   
 }
-// funcion que chekear si un correoelectronico es asociado a un bot y si no existe añade y crear un hilo de ese usuario
-export async function addUsers (id: string,correo:string){
-  //debug
-  console.log("id:",id);
-  console.log("correo:",correo);
-  try{
-  const filePath = path.join(process.cwd(),'botUser.json');
-  let jsonData = fs.readFileSync(filePath).toString();
-  let arrayData = JSON.parse(jsonData);
-  //debug
-  console.log("arrayData:",arrayData);
-  const botIndex = arrayData.findIndex((bot: { id: string; }) => bot.id === id);
-  if (botIndex !== -1) {
-    // Si el bot existe, verificar si el correo ya está asociado con ese bot
-    if (arrayData[botIndex].correo.includes(correo)) {
-      //debug
-      console.log("El correo electrónico ya está asociado a este bot.");
-      return false;
-    } else {
-      // Si el correo no está asociado, añadirlo a la lista de correos del bot, y crea un hilo para el usuario
-      arrayData[botIndex].correo.push(correo);
-      try{
-        const result = await createChatThread(id);
-        arrayData[botIndex].hilo.push(result.threadId)
-        }catch(error){
-          console.log("error en añadir un hilo a user:", error);
+// funcion que chekear si un correoelectronico es asociado a un bot y si no existe añade 
+  export async function addUsers(id: string, correo: string) {
+      console.log("chequeando si existe usuario");
+    try {
+      const filePath = path.join(process.cwd(), 'botUser.json');
+      let jsonData = fs.readFileSync(filePath).toString();
+      let arrayData = JSON.parse(jsonData);
+      
+  
+      const botIndex = arrayData.findIndex((bot: { id: string; }) => bot.id === id);
+  
+      if (botIndex !== -1) {
+        // Si el bot existe, verificar si el correo ya está asociado con ese bot
+        if (!arrayData[botIndex].correo.includes(correo)) {
+          // Si el correo no está asociado, intentar crear un hilo y añadir el correo a la lista
+            arrayData[botIndex].correo.push(correo);
+            fs.writeFileSync(filePath, JSON.stringify(arrayData, null, 2));
+            console.log("Correo electrónico y hilo añadidos con éxito al bot existente.");
+            return true;
+          } else {
+          console.log("El correo electrónico ya está asociado a este bot.");
+          return false;
         }
-      // Guardar los cambios en el archivo
+      } else {
+        // Si el bot no existe, intentar crear un hilo y añadir un nuevo bot
+  
+          arrayData.push({ id: id, correo: [correo], hilos: [] });
+          fs.writeFileSync(filePath, JSON.stringify(arrayData, null, 2));
+          return true;
+       
+        
+        }
+      }catch(error){
+      console.log("error en añadir el usuario:", error);}
+      }
+  
+      // function que añade el thread a usuario
+  export async function addThread (thread: string, id:string){
+    console.log("añadiendo hilo a usuario");
+    console.log("thread:", thread);
+    console.log("id:", id);
+    try {
+      const filePath = path.join(process.cwd(), 'botUser.json');
+      let jsonData = fs.readFileSync(filePath).toString();
+      let arrayData = JSON.parse(jsonData);
+      const botIndex = arrayData.findIndex((bot: { id: string; }) => bot.id === id);
+      //debug
+      console.log("botIndex:", botIndex);
+      arrayData[botIndex].hilos.push(thread);
+      console.log("arrayData:", arrayData);
       fs.writeFileSync(filePath, JSON.stringify(arrayData, null, 2));
 
-      console.log("Correo electrónico añadido con éxito al bot.");
-      return true;
-    }
-  } else {
-  
-  
-    try{
-      const result = await createChatThread(id);
-      arrayData.push({ id: id, correo: [correo], hilo:[result.threadId] });
-      console.log("result:",result);
-      }catch(error){
-        console.log("error en añadir un hilo a user:", error);
-      }
-
-    // Guardar los cambios en el archivo
-
-    fs.writeFileSync(filePath, JSON.stringify(arrayData, null, 2));
-    return true;
-  }
-}catch(error){
-  console.log("error en encontrar el añadir el usuario:", error);
-}
-
-
-}
-
-// funcion utilizado para llamar a api de crear hilo
-export async function createChatThread(botId: string) {
-  const bot = await botData(botId);
-  //debug 
-  console.log("bot:",bot.token);
-  // debug
-  console.log("creando hilo");
-
-  try {
-    const response = await fetch('http://localhost:3000/api/createThread', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'key': bot.token,
-      },
-    });
-   
-    
-    if (!response.ok) {
-      throw new Error(`Network response was not ok, status: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    return data; // Contiene el threadId o un mensaje de error
-  } catch (error) {
-    console.error("Error creating chat thread:", error);
-    return { error: error };
+  }catch(error){
+    console.log("error en añadir hilo a usuario:", error);
   }
 }
+
       
-// funcion para llamar a api de addMensage y añade un mensaje a hilo
-export async function addMessage(mensaje: dataMessage,id: string) {
-  const bot = await botData(id);
-  // Define el endpoint del API
-  try {
-    // Realiza la solicitud al API
-    const response = await fetch('http://localhost:3000/api/addMessage', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'key': bot.id,
-      },
-      body: JSON.stringify(mensaje),
-    });
-
-    // Espera la respuesta del API
-    const result = await response.json();
-
-    // Manejo de la respuesta
-    if (response.ok) {
-      console.log('Mensaje añadido exitosamente:', result);
-    } else {
-      console.error('Error al añadir el mensaje:', result.error);
-    }
-  } catch (error) {
-    console.error('Error en la solicitud:', error);
-  }
-}
 
 
 // buscar el hilo de usuario dado el botid y su correo
@@ -328,6 +272,7 @@ export async function getHilo (id: string, correo: string){
     const correoExiste = bot.correo.includes(correo);
     if (correoExiste) {
       // Si el correo existe, devuelve el hilo asociado
+      console.log("hilo obtenido:", bot.hilo);
       return bot.hilo;
     }
   }

@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from 'next-auth';
+import { IM_Fell_DW_Pica_SC } from 'next/font/google';
  
 export const authConfig = {
   pages: {
@@ -10,7 +11,11 @@ export const authConfig = {
       //console.log("isLoggedIn:", isLoggedIn);
       const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
       const isOnChat = nextUrl.pathname.startsWith('/chats');
+      const isOnEjemplo = nextUrl.pathname.startsWith('/ejemplo');
       if(isOnChat){
+        return true;
+      }
+      if(isOnEjemplo  ){
         return true;
       }
       if (isOnDashboard) {
