@@ -1,6 +1,6 @@
 'use client;'
-import { lusitana} from '@/app/ui/fonts';
-import BotsList from '@/app/ui/bot/botsList';
+import { lusitana} from '@/app/components/fonts';
+import BotsList from '@/app/components/bot/botsList';
 function botsPage() {
     return (
         <main style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>

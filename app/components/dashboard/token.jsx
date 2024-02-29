@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Button } from '@/app/ui/button'; 
+import { Button } from '@/app/components/button'; // Asegúrate de que la ruta de importación sea correcta
 
-function Role({ onRoleSubmit }) { // Agrega onRoleSubmit como prop
+function Token({ onTokenSubmit }) { // Agrega onTokenSubmit como prop
   const [value, setValue] = useState('');
   const [error, setError] = useState('');
 
@@ -15,27 +15,16 @@ function Role({ onRoleSubmit }) { // Agrega onRoleSubmit como prop
     if (!value.trim()) {
       setError('Por favor, introduce un valor antes de enviar.');
     } else {
-      onRoleSubmit(value); // Llama a la función de callback con el valor del rol
+      onTokenSubmit(value); // Llama a la función de callback con el valor del token
       setValue('');
     }
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      <textarea
+      <input
+        type="text"
         id="inputField"
-        style={{
-          width: '100%',
-          height: '150px',
-          resize: 'vertical',
-          fontSize: '16px',
-          padding: '8px',
-          boxSizing: 'border-box',
-          borderColor: '#ccc',
-          borderRadius: '4px',
-          lineHeight: '1.5',
-        }}
-        placeholder="Escribe aquí las instrucciones del chatbot..."
         value={value}
         onChange={handleChange}
       />
@@ -45,4 +34,4 @@ function Role({ onRoleSubmit }) { // Agrega onRoleSubmit como prop
   );
 }
 
-export default Role;
+export default Token;

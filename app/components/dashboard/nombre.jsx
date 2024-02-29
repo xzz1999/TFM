@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button } from '@/app/ui/button'; // Asegúrate de que la ruta de importación sea correcta
+import { Button } from '@/app/components/button'; // Asegúrate de que la ruta de importación sea correcta
 
 function Name({ onNameSubmit }) { // Agrega onNameSubmit como prop
   const [value, setValue] = useState('');

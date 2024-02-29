@@ -1,5 +1,5 @@
-import ChatLogo from '@/app/ui/logo';
-import LoginForm from '@/app/ui/login-form';
+import ChatLogo from '@/app/components/logo';
+import LoginForm from '@/app/components/login-form';
 
  
 export default function LoginPage() {

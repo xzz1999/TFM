@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import ChatLogo from '@/app/ui/logo.jsx';
+import ChatLogo from '@/app/components/logo.jsx';
 import { createChatThread } from '@/app/lib/actions';
 
 export default function ChatPage() {

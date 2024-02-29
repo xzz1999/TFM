@@ -268,12 +268,13 @@ export async function getHilo (id: string, correo: string){
   // Encuentra el bot que coincide con el ID proporcionado
   const bot = arrayData.find((bot: { id: string; }) => bot.id === id);
   if (bot) {
-    // Verifica si el correo proporcionado está en la lista de correos del bot encontrado
-    const correoExiste = bot.correo.includes(correo);
-    if (correoExiste) {
+    
+    const correoIndice = bot.correo.indexOf(correo);
+    if (correoIndice !== -1) {
       // Si el correo existe, devuelve el hilo asociado
-      console.log("hilo obtenido:", bot.hilo);
-      return bot.hilo;
+      const hilo = bot.hilos[correoIndice];
+      console.log("Hilo obtenido para el correo:", hilo);
+      return hilo;
     }
   }
   

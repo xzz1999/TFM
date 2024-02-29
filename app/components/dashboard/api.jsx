@@ -1,5 +1,5 @@
 import React from 'react';
-import Dropdown from './Dropdown'; // Asegúrate de que la ruta de importación sea correcta
+import Dropdown from './dropdown'; // Asegúrate de que la ruta de importación sea correcta
 
 const IA = ({ onOptionSelected }) => {
   const options = [

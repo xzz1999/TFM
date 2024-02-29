@@ -1,11 +1,13 @@
 import React from 'react';
 import './login.css';
-import { addUsers, addThread} from '@/app/lib/actions';
+import { addUsers, addThread, getHilo} from '@/app/lib/actions';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+
 export default function Login() {
     const [id, setId] = useState('');
     const [correo, setCorreo] = useState('');
-    const [threadId,setThreadId] = useState('');
+    const router = new useRouter;
     useEffect(() => {
         const botId = localStorage.getItem('selectedBotId');
         if (botId) {
@@ -23,16 +25,20 @@ export default function Login() {
         if(usuario){
         const hilo = await submitToApi(correo); // Enviar el correo a la 
         console.log("hilo:",hilo.threadId);
-        setThreadId(hilo.threadId);
         await addThread (hilo.threadId, id);
         }
         console.log("enviando primer mensaje");
+        const conv = await getHilo(id,correo);
+        console.log("conv:",conv);
         const mensaje= {
-            threadId: threadId,
+            threadId: conv,
             input: "hola"
 
         }
         await submitMessage(mensaje)
+        const name = correo.split("@")[0];
+        router.push(`/chats/${id}/${name}`);
+        
        
     };
 

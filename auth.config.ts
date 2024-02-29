@@ -11,13 +11,10 @@ export const authConfig = {
       //console.log("isLoggedIn:", isLoggedIn);
       const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
       const isOnChat = nextUrl.pathname.startsWith('/chats');
-      const isOnEjemplo = nextUrl.pathname.startsWith('/ejemplo');
       if(isOnChat){
         return true;
       }
-      if(isOnEjemplo  ){
-        return true;
-      }
+    
       if (isOnDashboard) {
         if (isLoggedIn) return true;
         return false; // redirigir a los usuarios a la pagina de login

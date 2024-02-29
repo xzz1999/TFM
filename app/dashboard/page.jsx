@@ -1,13 +1,13 @@
 
   "use client";
-  import { lusitana, roboto } from '@/app/ui/fonts';
-  import IA from '@/app/ui/dashboard/api';
-  import Token from '@/app/ui/dashboard/token';
-  import Role from '@/app/ui/dashboard/role';
-  import Name from '@/app/ui/dashboard/nombre' 
-  import Files from '@/app/ui/dashboard/archivos';
+  import { lusitana, roboto } from '@/app/components/fonts';
+  import IA from '@/app/components/dashboard/api';
+  import Token from '@/app/components/dashboard/token';
+  import Role from '@/app/components/dashboard/role';
+  import Name from '@/app/components/dashboard/nombre' 
+  import Files from '@/app/components/dashboard/archivos';
   import React, { useState } from 'react'; 
-  import { Button } from '@/app/ui/button'; 
+  import { Button } from '@/app/components/button'; 
   import {isDataNull} from '@/app/lib/actions'
 
 

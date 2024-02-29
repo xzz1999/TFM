@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button } from '@/app/ui/button'; // Asegúrate de que la ruta de importación sea correcta
+import { Button } from '@/app/components/button'; // Asegúrate de que la ruta de importación sea correcta
 
 const Dropdown = ({ options, onSelectionChange }) => {
   const [selectedOption, setSelectedOption] = useState(options[0]);

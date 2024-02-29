@@ -4,8 +4,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRobot, faTimes, faPlus } from '@fortawesome/free-solid-svg-icons';
 import "./configure.css";
 import { botData, filesName,fileId, deleteFile } from '@/app/lib/actions'; // Asegúrate de implementar uploadFile en tus acciones
-import { lusitana, roboto } from '@/app/ui/fonts';
-import { Button } from '@/app/ui/button';
+import { lusitana, roboto } from '@/app/components/fonts';
+import { Button } from '@/app/components/button';
 
 const BotData = () => {
   const [bot, setBot] = useState({ id: '', name: '', role: '', fileId: [], token: '', ai: "" });

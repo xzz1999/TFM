@@ -1,6 +1,6 @@
-import ChatLogo from '@/app/ui/logo.jsx';
+import ChatLogo from '@/app/components/logo.jsx';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
-import { lusitana } from '@/app/ui/fonts';
+import { lusitana } from '@/app/components/fonts';
 import Link from 'next/link';
 import Image from 'next/image';
 
