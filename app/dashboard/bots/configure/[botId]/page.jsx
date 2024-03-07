@@ -60,7 +60,7 @@ const BotData = () => {
   
     try {
       // Llama a la API de eliminación de archivos
-      const deleteResponse = await fetch('/api/deleteFile', {
+      const deleteResponse = await fetch('/api/openAI/deleteFile', {
         method: 'DELETE', // o 'DELETE', dependiendo de tu implementación del servidor
         headers: {
           'Content-Type': 'application/json',
@@ -128,8 +128,8 @@ const BotData = () => {
       try {
         for (const file of newFiles) {
           const formData = new FormData();
-          formData.append('file', file); // Asegúrate de que 'file' coincida con lo que tu endpoint de subida espera
-          const uploadResponse = await fetch('/api/uploadFile', {
+          formData.append('file', file); 
+          const uploadResponse = await fetch('/api/openAI/uploadFile', {
             method: 'POST',
             headers: {
               'key' : bot.token,
@@ -144,17 +144,15 @@ const BotData = () => {
           console.log("uploadresult:",uploadResult.fileId);
       if (uploadResult.error) {
         console.error('Error uploading file:', uploadResult.error);
-        // Maneja este error como prefieras
-        continue; // O maneja el error de otra manera
+        continue; 
       }
-      // Suponiendo que el endpoint de subida devuelve el ID o URL del archivo subido
+     
       dataToSend.files.push(uploadResult.fileId);
     }
-    console.log("datatosendfile:",dataToSend.files);
-    console.log("dataToSend",dataToSend);
+    
     
       try {
-        const response = await fetch('/api/updateAssistant', {
+        const response = await fetch('/api/openAI/updateAssistant', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

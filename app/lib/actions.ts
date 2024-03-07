@@ -2,24 +2,27 @@
 
 import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
-import fs from 'fs';
-import path from 'path';
-import {datafichero,dataBot,dataRequire, dataMessage} from '@/app/lib/definitions'
+import {datafichero,dataBot,dataRequire} from '@/app/lib/definitions'
+import {MongoClient} from 'mongodb';
+const uri = "mongodb://127.0.0.1:27017";
+const client = new MongoClient(uri);
+
+
 
 export async function authenticate(
   prevState: string | undefined,
   formData: FormData,
 ) {
   try {
-    console.log("formData:",formData);
+  
     await signIn('credentials', formData);
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
         case 'CredentialsSignin':
-          return 'Invalid credentials.';
+          return 'contraseña invalida.';
         default:
-          return 'Something went wrong.';
+          return 'algo ha fallado.';
       }
     }
     throw error;
@@ -29,25 +32,28 @@ export async function authenticate(
 //verifica si los archivos subidos non son duplicados
 export async function checkFile  (hash : string) {
   try{
-  const filePath = path.join(process.cwd(),'ficheros.json');
-  const jsonData = fs.readFileSync(filePath).toString();
-  const obj = JSON.parse(jsonData);
-  const hashExist = obj.find((obj: { ficherohash: string; })=>obj.ficherohash === hash);
-  if(hashExist){
-    return hashExist.ficheroId;
-  }else return null;
+      await client.connect();
+      const database = client.db("TFM");
+      const collection = database.collection("Files");
+      const result = await collection.findOne({'ficherohash': hash});
+      await client.close();
+      if(result){
+        return result.ficheroId;
+      }else{
+        return null;
+      }
+  
 }catch(error){
-  console.log("error en checkear hash:",error);
+  console.log("error en checkear fichero:",error);
 }}
-// funcion para actualizar el archivo fichero.json
-export async function updateJson(fichero: datafichero){
+// funcion para insertar un fichero en base de dato
+export async function updateFile(fichero: datafichero){
   try{
-    const filePath = path.join(process.cwd(),'ficheros.json');
-    let jsonData = fs.readFileSync(filePath).toString();
-    let arrayData = JSON.parse(jsonData);
-    arrayData.push(fichero);
-    const updatedJsonData = JSON.stringify(arrayData, null, 2);
-    fs.writeFileSync(filePath, updatedJsonData);
+    await client.connect();
+    const database = client.db("TFM");
+    const collection = database.collection("Files");
+    await collection.insertOne(fichero);
+    await client.close();
     return true;
     
   }catch(error){
@@ -58,96 +64,90 @@ export async function updateJson(fichero: datafichero){
 
 // funcion que devuelve el nombre de los ficheros de un bot
 export async function filesName(ficheroID: string[]) {
+  //debug
+  console.log("filesname");
   try {
-    // Asegúrate de que la ruta a 'ficheros.json' es correcta en tu estructura de directorios
-    const filePath = path.join(process.cwd(), 'ficheros.json');
-    let jsonData = fs.readFileSync(filePath).toString();
-    let arrayData = JSON.parse(jsonData);
-
-
-    const nombres = ficheroID.map(id => {
-      // Cambio 'file.name' a 'file.ficheroName' para que coincida con tu JSON
-      const file = arrayData.find((fichero: { ficheroId: string }) => fichero.ficheroId === id);
-      return file ? file.ficheroName : null; // Cambiado de 'file.name' a 'file.ficheroName'
-    });
+    await client.connect();
+    const database = client.db("TFM");
+    const collection = database.collection("Files");
+    const query = { ficheroId: { $in: ficheroID } };
+    const files = await collection.find(query).toArray();
+    const nombres = files.map(file => file.ficheroName);
+    await client.close();
     return nombres;
   } catch (error) {
     console.log("error en buscar el nombre de fichero:", error);
-    throw error; // Es buena práctica propagar el error para manejarlo en el llamador si es necesario.
   }
 }
 // funcion que devuelve el id de fichero bot;
 export async function fileId(ficheroname: string) {
+  //debug
+  console.log("filesId");
   try {
-    // Asegúrate de que la ruta a 'ficheros.json' es correcta en tu estructura de directorios
-    const filePath = path.join(process.cwd(), 'ficheros.json');
-    let jsonData = fs.readFileSync(filePath).toString();
-    let arrayData = JSON.parse(jsonData);
-    console.log("arrayData:", arrayData);
+    await client.connect();
+    const database = client.db("TFM");
+    const collection = database.collection("Files");
+    const file = await collection.findOne({"ficheroName":ficheroname});
+    await client.close();
+    if(file){
+      return file.ficheroId;
+    }else{
+      return null
+    }
 
-    const id = arrayData.find((fichero: { ficheroName: string; }) => fichero.ficheroName === ficheroname);
-
-    return id;
   } catch (error) {
     console.log("error en buscar el nombre de fichero:", error);
-    throw error;
   }
 }
 // funcion que elimina un fichero de fichero.json dado el ficheroid
 export async function deleteFile (id:string){
   try{
-  const filePath = path.join(process.cwd(), 'ficheros.json');
-    let jsonData = fs.readFileSync(filePath).toString();
-    let arrayData = JSON.parse(jsonData);
-    console.log("arrayData:", arrayData);
-     // Encuentra el índice del fichero con el ID dado en el arreglo
-  const index = arrayData.findIndex((fichero: { ficheroId: string; }) => fichero.ficheroId === id);
-  // Si se encuentra el fichero, elimínalo del arreglo
-  if (index !== -1) {
-    arrayData.splice(index, 1); // Elimina el elemento en el índice encontrado
-    fs.writeFileSync(filePath, JSON.stringify(arrayData, null, 2)); // Escribe el arreglo modificado de nuevo al archivo JSON
-    console.log(`fichero con id: ${id} ha sido eliminado.`);
+    await client.connect();
+    const database = client.db("TFM");
+    const collectionFile = database.collection("Files");
+    const collectionBot = database.collection("bots");
+    const numeroBots = await collectionBot.countDocuments({ fileId: fileId });
+    if(numeroBots > 1){
+    await collectionFile.deleteOne({"ficheroId": id});
     return true;
-  } else {
-    console.log(`fichero con id: ${id} no encontrado.`);
+    }else
     return false;
-  }
 }catch(error){
   console.log("error en eliminar fichero:", error);
 }
 }
 
-
-// añadir un bot el fichero json de los bots 
-export async function addBot(fichero: dataBot){
-  try{
-    const filePath = path.join(process.cwd(),'bots.json');
-    let jsonData = fs.readFileSync(filePath).toString();
-    let arrayData = JSON.parse(jsonData);
-    arrayData.push(fichero);
-    const addJsonData = JSON.stringify(arrayData, null, 2);
-    fs.writeFileSync(filePath, addJsonData);
+// Función para añadir un bot a la base de datos de MongoDB
+export async function addBot(fichero: any) {
+  try {
+ 
+    await client.connect();
+    const database = client.db("TFM");
+    const collection = database.collection("bots");
+    const result = await collection.insertOne(fichero);
+    await client.close();
     return true;
-    
-  }catch(error){
-    console.log("error en actualizar fichero.json:", error);
+  } catch (error) {
+    console.error("Error al escribir bot en MongodB:", error);
   }
 }
+
 //actualizar un bot
 export async function updateBot(id:string, datos: dataBot){
   try{
-    const filePath = path.join(process.cwd(),'bots.json');
-    let jsonData = fs.readFileSync(filePath).toString();
-    let arrayData = JSON.parse(jsonData);
-    const botIndex = arrayData.findIndex((bot: { Id: string; }) => bot.Id === id);
-    if (botIndex === -1) {
-      throw new Error('Bot no encontrado');
+    await client.connect();
+    const database = client.db("TFM");
+    const collection = database.collection("bots");
+    const result = await collection.updateOne(
+      { "Id": id }, 
+      { $set: datos } 
+    );
+    await client.close();
+    if(result){
+      return true;
+    }else{
+      return false;
     }
-    arrayData[botIndex] = { ...arrayData[botIndex], ...datos };
-    fs.writeFileSync(filePath, JSON.stringify(arrayData, null, 2));
-    console.log('Bot actualizado');
-    return true;
-
   }catch (error) {
     console.error('Error updating bot:', error);
   }
@@ -155,28 +155,30 @@ export async function updateBot(id:string, datos: dataBot){
 
 
 // verifica si los datos de bot no son nulos
-export const isDataNull = (data:dataRequire) => {
+export async function isDataNull  (data:dataRequire)  {
   const isInvalid = Object.values(data).some(value => value === null || value === undefined || value === '');
   console.log("es válido:", isInvalid);
   if(!isInvalid) return true;
   else return false;
 };
-// funcion que devuelve la lista de bots existentes con su nombre y el id
 
+// funcion que devuelve la lista de bots existentes con su nombre y el id
 export async function getBot () {
   try{
-  const filePath = path.join(process.cwd(),'bots.json');
-  console.log("filePath:",filePath)
-    let jsonData = fs.readFileSync(filePath).toString();
-    let arrayData = JSON.parse(jsonData);
-    //const botNames = arrayData.map(((arrayData: { name:String  }) => arrayData.name));
-    const bots = arrayData.map((bot: { name: String; Id: String; }) => ({
-      name: bot.name,
-      Id: bot.Id 
-    }));
-    //debug
-    console.log("botNames:", bots);
-    return bots;
+    await client.connect();
+    const database = client.db("TFM");
+    const collection = database.collection("bots");
+    const bots = await collection.find({}).toArray();
+    await client.close();
+    const botsSerializable = bots.map(bot => {
+      return {
+  
+        Id: bot.Id,
+        name: bot.name,
+      };
+    });
+    return botsSerializable
+
 }catch(error){
   console.log("error en obtener lista de bots:", error);
 }}
@@ -184,17 +186,26 @@ export async function getBot () {
 
 // funcion que devuelve los datos de un bot identificado por su id
 export async function botData (botId: string | null){
+  //debug
+  console.log("botData");
   try{
- 
-  const filePath = path.join(process.cwd(),'bots.json');
- 
-  let jsonData = fs.readFileSync(filePath).toString();
-
-  let arrayData = JSON.parse(jsonData);
- 
-  const bot = arrayData.find((bot: { Id: string; }) =>bot.Id === botId);
-   
-  return bot ? bot : { error:"No se ha encontrado el bot con id:" + botId};
+    await client.connect();
+    const database = client.db("TFM");
+    const collection = database.collection("bots");
+    const bot = await collection.findOne({ "Id": botId });
+    
+    await client.close(); 
+    if (!bot) {
+      return null; }
+      const botsSerializable = {
+        Id: bot.Id, 
+        name: bot.name,
+        ai: bot.ai,
+        token: bot.token,
+        role: bot.role,
+        fileId: bot.fileId
+      };
+      return botsSerializable;
   }catch(error){
     console.log("error en busqueda de bot:", error);
   }
@@ -204,82 +215,91 @@ export async function botData (botId: string | null){
   export async function addUsers(id: string, correo: string) {
       console.log("chequeando si existe usuario");
     try {
-      const filePath = path.join(process.cwd(), 'botUser.json');
-      let jsonData = fs.readFileSync(filePath).toString();
-      let arrayData = JSON.parse(jsonData);
+      await client.connect();
+      const database = client.db("TFM");
+      const collection = database.collection("botUsers");
+      const botExists = await collection.findOne({ "id": id, "correo": correo });
+      if (botExists) {
+        return false; 
+      } else {
+        const bot = await collection.findOne({ "id": id });
+        if (bot) {
+          await collection.updateOne({ "id": id }, { $push: { "correo": correo } });
+          await client.close();
+        } else {
+          await collection.insertOne({ "id": id, "correo": [correo], "hilos": [] });
+          await client.close();
+        }
+        return true;
+      
+      }  } catch (error) {
+        console.error("Error en la buscar el bot asociado a usuario:", error);
+      }
+    }
       
   
-      const botIndex = arrayData.findIndex((bot: { id: string; }) => bot.id === id);
-  
-      if (botIndex !== -1) {
-        // Si el bot existe, verificar si el correo ya está asociado con ese bot
-        if (!arrayData[botIndex].correo.includes(correo)) {
-          // Si el correo no está asociado, intentar crear un hilo y añadir el correo a la lista
-            arrayData[botIndex].correo.push(correo);
-            fs.writeFileSync(filePath, JSON.stringify(arrayData, null, 2));
-            console.log("Correo electrónico y hilo añadidos con éxito al bot existente.");
-            return true;
-          } else {
-          console.log("El correo electrónico ya está asociado a este bot.");
-          return false;
-        }
-      } else {
-        // Si el bot no existe, intentar crear un hilo y añadir un nuevo bot
-  
-          arrayData.push({ id: id, correo: [correo], hilos: [] });
-          fs.writeFileSync(filePath, JSON.stringify(arrayData, null, 2));
-          return true;
-       
-        
-        }
-      }catch(error){
-      console.log("error en añadir el usuario:", error);}
-      }
-  
+      
       // function que añade el thread a usuario
   export async function addThread (thread: string, id:string){
-    console.log("añadiendo hilo a usuario");
-    console.log("thread:", thread);
-    console.log("id:", id);
+   
     try {
-      const filePath = path.join(process.cwd(), 'botUser.json');
-      let jsonData = fs.readFileSync(filePath).toString();
-      let arrayData = JSON.parse(jsonData);
-      const botIndex = arrayData.findIndex((bot: { id: string; }) => bot.id === id);
-      //debug
-      console.log("botIndex:", botIndex);
-      arrayData[botIndex].hilos.push(thread);
-      console.log("arrayData:", arrayData);
-      fs.writeFileSync(filePath, JSON.stringify(arrayData, null, 2));
-
+      await client.connect();
+      const database = client.db("TFM");
+      const collection = database.collection("botUsers");
+      await collection.updateOne({ "id": id }, { $push: { "hilos": thread } });
+      return true;
   }catch(error){
     console.log("error en añadir hilo a usuario:", error);
   }
 }
 
-      
-
-
 // buscar el hilo de usuario dado el botid y su correo
 export async function getHilo (id: string, correo: string){
-  const filePath = path.join(process.cwd(),'botUser.json');
-  let jsonData = fs.readFileSync(filePath).toString();
-  let arrayData = JSON.parse(jsonData);
-  // Encuentra el bot que coincide con el ID proporcionado
-  const bot = arrayData.find((bot: { id: string; }) => bot.id === id);
-  if (bot) {
-    
-    const correoIndice = bot.correo.indexOf(correo);
-    if (correoIndice !== -1) {
-      // Si el correo existe, devuelve el hilo asociado
-      const hilo = bot.hilos[correoIndice];
-      console.log("Hilo obtenido para el correo:", hilo);
-      return hilo;
-    }
+  try{
+    await client.connect();
+      const database = client.db("TFM");
+      const collection = database.collection("botUsers");
+      const usuario = await collection.findOne({ "id": id, "correo": correo });
+      if (usuario) {
+        const index = usuario.correo.indexOf(correo);
+        await client.close();
+        return usuario.hilos[index];
+      }else{
+        return null;
+      }
+  }catch(error){
+    console.log("error en buscar el hilo:",error)
+
   }
-  
-  // Si no se encuentra el bot o el correo no coincide, devuelve un valor que indique el error o nulo
-  return null;
 }
+
+
+
+// funcion para buscar en la base de datos la contraseña 
+export async function getPassword(correo: string): Promise<string> {
+  try {
+    // Conectar al cliente
+    await client.connect();
+    // Seleccionar la base de datos y la colección
+    const database = client.db("TFM");
+    const collection = database.collection("users");
+    // Buscar el usuario por correo y obtener sólo el campo de password
+    const result = await collection.findOne({'email': correo});
+
+    // Cerrar la conexión
+    await client.close();
+
+    // Verificar si se encontró un resultado y devolver el password
+    if (result && result.password) {
+      return result.password; // Asegura que esto es un string
+    } else {
+      return ""; // Devolver un string vacío si no se encuentra el usuario
+    }
+  } catch (error) {
+    console.error("Error al obtener el password de MongoDB:", error);
+    return ""; // Devolver un string vacío en caso de error
+  }
+}
+
 
 

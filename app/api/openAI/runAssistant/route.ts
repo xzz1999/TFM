@@ -12,20 +12,36 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from "openai";
+import { botData } from '@/app/lib/actions';
 
 
 
-// Initialize the OpenAI client with the API key. The API key is essential for authenticating
-// and authorizing the requests to OpenAI's services.
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 export async function POST(req: NextRequest) {
   try {
     // Extracting the assistant ID and thread ID from the JSON payload of the request.
     // These IDs are essential for specifying which assistant and conversation thread
     // to interact with.
+    const botId = req.headers.get('id');
+    //debug
+    console.log("id:", botId);
+    let bot;
+    if(botId){
+      bot = await botData(botId);
+    }
+    // debug
+    console.log("bot:",bot);
+    if (!bot) {
+      console.log('No API key provided');
+      return NextResponse.json({ success: false, message: 'API key is required' });
+    }
+    const token = bot.token;
+    console.log("token:",token);
+  
+      // Inicializar OpenAI
+      const openai = new OpenAI({
+        apiKey: token
+      });
     const data = await req.json();
     const assistantId = data.assistantId;
     const threadId = data.threadId;
