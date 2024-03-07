@@ -1,10 +1,10 @@
   import { NextRequest, NextResponse } from 'next/server';
-  import { writeFile, mkdir, unlink, readFile } from 'fs/promises';
+  import { writeFile, mkdir, unlink,  } from 'fs/promises';
   import { createReadStream, existsSync } from 'fs';
   import OpenAI from "openai";
   import crypto from 'crypto';
   import path from 'path';
-  import {checkFile,updateJson} from '@/app/lib/actions';
+  import {checkFile,updateFile} from '@/app/lib/actions';
 
 
 
@@ -17,14 +17,18 @@
       console.log('No API key provided');
       return NextResponse.json({ success: false, message: 'API key is required' });
     }
-
+    //deb
+    console.log("inicializando OpenAI")
     // Inicializar OpenAI
     const openai = new OpenAI({
       apiKey: apiKey
     });
 
     const data = await request.formData();
+  
     const file: File | null = data.get('file') as unknown as File;
+    //debug
+    console.log("file en uploadFile:", file);
 
     if (!file) {
       console.log('No file found in the request');
@@ -33,7 +37,6 @@
 
     // comprueba si existe el directorio tmp
     const tmpDir = '/tmp';
-    const fPath= path.join(process.cwd(),"ficheros.json")
     if (!existsSync(tmpDir)) {
       await mkdir(tmpDir);
       console.log(`Temporary directory ${tmpDir} created`);
@@ -44,6 +47,7 @@
     const pathT = `${tmpDir}/${file.name}`;
     const hash = crypto.createHash('sha256').update(buffer).digest('hex');
     const exist = await checkFile(hash);
+    //debug
     console.log("exist:",exist);
     if(exist===null){
   
@@ -64,7 +68,7 @@
           ficheroName: file.name
   
         }
-        const update = await updateJson(newData);
+        const update = await updateFile(newData);
         if(update){
           console.log("se ha actualizado con exito el fichero json");
         }

@@ -3,62 +3,68 @@ import './login.css';
 import { addUsers, addThread, getHilo} from '@/app/lib/actions';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+//import {useUser} from '@/app/components/chat/chatContext';
 
 export default function Login() {
     const [id, setId] = useState('');
     const [correo, setCorreo] = useState('');
     const router = new useRouter;
+   // const { setUser } = useUser();
     useEffect(() => {
         const botId = localStorage.getItem('selectedBotId');
         if (botId) {
             setId(botId);
+       
         }
     }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const correo = e.target.correo.value;
-        setCorreo(correo); // Guardar el correo en el estado, si aún necesitas hacerlo
-        console.log("creando thread");
+        setCorreo(correo); 
+        //setUser(id,correo);
         const usuario = await addUsers(id, correo);
         console.log("usuario:", usuario);
         if(usuario){
-        const hilo = await submitToApi(correo); // Enviar el correo a la 
+        const hilo = await submitToApi(correo); 
         console.log("hilo:",hilo.threadId);
         await addThread (hilo.threadId, id);
         }
         console.log("enviando primer mensaje");
         const conv = await getHilo(id,correo);
-        console.log("conv:",conv);
+    
         const mensaje= {
             threadId: conv,
             input: "hola"
 
         }
         await submitMessage(mensaje)
+        const conversation = await runAssistant(id,conv);   
+        
         const name = correo.split("@")[0];
         router.push(`/chats/${id}/${name}`);
+      
         
        
     };
 
     const submitToApi = async (correo) => {
         try {
-            const response = await fetch('/api/createThread', { // Sustituye '/api/ruta-de-tu-api' con tu endpoint real
+            const response = await fetch('/api/openAI/createThread', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'id': id
-                    // Incluye aquí otros headers necesarios, como tokens de autenticación
+                    
                 },
-                body: JSON.stringify({ correo }) // Asegúrate de que el cuerpo coincide con lo que tu API espera
+                body: JSON.stringify({ correo }) 
             });
 
             if (!response.ok) {
                 throw new Error(`Error en la petición: ${response.statusText}`);
             }
 
-            const data = await response.json(); // Suponiendo que tu API responda con JSON
+            const data = await response.json(); 
             return data;
         } catch (error) {
             console.error('Error al enviar correo a la API:', error);
@@ -68,10 +74,9 @@ export default function Login() {
 
 const submitMessage = async (mensaje)=>{
 
- 
   try {
-    // Realiza la solicitud al API
-    const response = await fetch('/api/addMessage', {
+  
+    const response = await fetch('/api/openAI/addMessage', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -80,10 +85,10 @@ const submitMessage = async (mensaje)=>{
       body: JSON.stringify(mensaje),
     });
 
-    // Espera la respuesta del API
+
     const result = await response.json();
 
-    // Manejo de la respuesta
+  
     if (response.ok) {
       console.log('Mensaje añadido exitosamente:', result);
     } else {
@@ -93,6 +98,42 @@ const submitMessage = async (mensaje)=>{
     console.error('Error en la solicitud:', error);
   }
 }
+const  runAssistant = async (assistantId, threadId) =>{
+    try {
+      
+      const requestBody = {
+        assistantId: assistantId,
+        threadId: threadId,
+      };
+  
+     
+      const response = await fetch('/api/openAI/runAssistant', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'id': id
+        },
+        body: JSON.stringify(requestBody),
+      });
+  
+  
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+  
+      
+      const data = await response.json();
+      console.log('Run ID:', data.runId);
+  
+      
+  
+    } catch (error) {
+      console.error('error en ejecutar el asistente:', error.message);
+    
+    }
+  }
+  
+
 
     return (
         <div className="login-container">

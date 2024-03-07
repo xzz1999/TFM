@@ -8,7 +8,8 @@
   import Files from '@/app/components/dashboard/archivos';
   import React, { useState } from 'react'; 
   import { Button } from '@/app/components/button'; 
-  import {isDataNull} from '@/app/lib/actions'
+  import {isDataNull} from '@/app/lib/actions'  
+
 
 
   const  Page = () => {
@@ -20,27 +21,23 @@
     const [files, setFiles] = useState([]);
     const handleOptionSelected  = (selectedOption) => {
       setSelectAI(selectedOption.value);
-      //debug
-      console.log('Opción seleccionada:', selectedOption); 
+      
     };
 
 
     const handleTokenSubmit = (tokenValue) => {
       setToken(tokenValue);
-      //debug
-      console.log("Token recibido:", tokenValue);
+
     };
     
     const handleNameSubmit = (nameValue) =>{
       setName(nameValue);
-      //DEBUG
-      console.log("nombre de bot:",name);
+
     }
 
     const handleRoleSubmit = (nameRole) => {
       setRole (nameRole);
-      // DEBUG
-      console.log ("Role de bot:", role);
+   
     }
     
     const handleFilesChange = (selectedFiles) => {
@@ -56,17 +53,17 @@
         assistantDescription: role,
         assistantToken: token
       };
-      const verifier = isDataNull(dataToSend);
+      const verifier = await isDataNull(dataToSend);
       console.log("verifier:",verifier);
       if(verifier){
       try {
-        // Sube cada archivo y recopila sus referencias (IDs, URLs, etc.)
+        
         console.log("files:",files);
         const files_ids = [];
         for (const file of files) {
           const formData = new FormData();
-          formData.append('file', file); // Asegúrate de que 'file' coincida con lo que tu endpoint de subida espera
-          const uploadResponse = await fetch('/api/uploadFile', {
+          formData.append('file', file); 
+          const uploadResponse = await fetch('/api/openAI/uploadFile', {
             method: 'POST',
             headers: {
               'key' : token,
@@ -77,28 +74,28 @@
           if (!uploadResponse.ok) {
             throw new Error('Network response was not ok during file upload');
           }
+          
           const uploadResult = await uploadResponse.json();
+          //debug
+          console.log("uploadResponse:",uploadResponse);
+          //debug
           console.log("uploadresult:",uploadResult.fileId);
       if (uploadResult.error) {
         console.error('Error uploading file:', uploadResult.error);
-        // Maneja este error como prefieras
-        continue; // O maneja el error de otra manera
       }
+      // debug
+      console.log("uploadResult:",uploadResult)
       
-
-      // Suponiendo que el endpoint de subida devuelve el ID o URL del archivo subido
       files_ids.push(uploadResult.fileId);
     }
     dataToSend.files = files_ids;
     
     
       try {
-        const response = await fetch('api/createAssistant', {
+        const response = await fetch('/api/openAI/createAssistant', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            // If you need to send a token or any other headers, add them here
-            // 'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify(dataToSend),
         });
@@ -110,8 +107,8 @@
         const responseData = await response.json();
         if (responseData.error) {
           console.error('Error creating assistant:', responseData.error);
-          alert(`Error: ${responseData.error}`); // Consider using a more user-friendly way to display errors
-        } else {
+          alert(`Error: ${responseData.error}`); 
+          }
           console.log('Assistant created successfully:', responseData.assistantId);
           alert(`Assistant created successfully. ID: ${responseData.assistantId}`);
           setToken("");
@@ -119,13 +116,13 @@
           setName("");
           setFiles([]);
           setSelectAI("");
-        }
+        
       }catch(error){
         console.error("Error en crear assistente:",error);
       } 
     }catch (error) {
         console.error('Error in handleCreate:', error);
-        alert(`Error: ${error.message}`); // Consider using a more user-friendly way to display errors
+        alert(`Error: ${error.message}`); 
       }
     }else{
       alert("Missing required assistant parameters");
