@@ -39,3 +39,40 @@
     button:disabled {
         background-color: #ddd; 
     }
+    .message {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .left {
+        justify-content: flex-start;
+    }
+    
+    .right {
+        justify-content: flex-end;
+    }
+    
+    .message p {
+        max-width: 70%;
+        word-wrap: break-word;
+        margin-left: 10px;
+    }
+    .chatbot-icon {
+        margin-right: 8px; 
+    }
+    .chatbot-icon {
+        font-size: 27px;
+    }
+    .user-icon{
+        font-size: 27px;
+
+    }
+    .right .user-icon {
+        order: 2;
+    }
+    
+    .right p {
+        order: 1;
+        margin-right: 8px; 
+    }

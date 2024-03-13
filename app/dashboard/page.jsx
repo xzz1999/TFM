@@ -41,7 +41,7 @@
     }
     
     const handleFilesChange = (selectedFiles) => {
-      // Actualiza el estado con los nuevos archivos seleccionados
+ 
     
       setFiles(selectedFiles);
     };

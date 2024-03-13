@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { getBot } from '@/app/lib/actions';
-import { useRouter } from 'next/navigation'; 
+import { useRouter,useSearchParams} from 'next/navigation'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRobot, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 import './BotList.css';
@@ -10,6 +10,7 @@ const BotList = () => {
   const [bots, setBots] = useState([]);
   const [showOptions, setShowOptions] = useState(null);
   const router = useRouter(); 
+  //const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     const fetchBots = async () => {
@@ -32,8 +33,10 @@ const BotList = () => {
     if (action === 'chat') {
       // Usa el router para navegar a la URL deseada
       console.log(botId);
-      router.push(`/chats/${botId}`);
-      localStorage.setItem('selectedBotId', botId);
+      //setSearchParams("botId",botId);
+      router.push(`/chats?botId=${botId}`);
+      //router.push(`/chats?botId=${botId}`);
+      //localStorage.setItem('selectedBotId', botId);
    
     
     } else if (action === 'configure'){
