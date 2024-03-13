@@ -1,27 +1,29 @@
-/**
- * API Route - Check Run Status
- *
- * This route is designed to check the status of a specific run in a thread
- * using the OpenAI API. It accepts POST requests containing 'threadId' and
- * 'runId' in the form data. The route then queries the OpenAI API to retrieve
- * the current status of the specified run. This information is crucial for
- * understanding the state of an ongoing interaction with an AI assistant,
- * such as whether the interaction is completed, ongoing, or has encountered
- * any issues. The status of the run is returned as a JSON response, providing
- * a simple and effective way for client applications to monitor and react to
- * the progress of AI-assisted conversations or tasks.
- *
- * Path: /api/checkRunStatus
- */
+
 
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from "openai";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { botData } from '@/app/lib/actions';
 
 export async function POST(req: NextRequest) {
+  //extraer la clave de cabecera
+  const botId = req.headers.get('id');
+  //debug
+  console.log("id en listMessage:", botId);
+  let bot;
+  if(botId){
+  bot = await botData(botId);
+  }
+  // debug
+  console.log("bot:",bot);
+  if (!bot) {
+  console.log('No API key provided');
+  return NextResponse.json({ success: false, message: 'API key is required' });
+  }
+  const token = bot.token;
+  // Inicializar OpenAI
+  const openai = new OpenAI({
+     apiKey: token
+  });
   try {
     // Extract JSON data from the request
     const data = await req.json();

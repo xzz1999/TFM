@@ -278,28 +278,26 @@ export async function getHilo (id: string, correo: string){
 // funcion para buscar en la base de datos la contraseña 
 export async function getPassword(correo: string): Promise<string> {
   try {
-    // Conectar al cliente
     await client.connect();
-    // Seleccionar la base de datos y la colección
     const database = client.db("TFM");
     const collection = database.collection("users");
-    // Buscar el usuario por correo y obtener sólo el campo de password
+
     const result = await collection.findOne({'email': correo});
 
-    // Cerrar la conexión
     await client.close();
 
-    // Verificar si se encontró un resultado y devolver el password
+
     if (result && result.password) {
-      return result.password; // Asegura que esto es un string
+      return result.password; 
     } else {
-      return ""; // Devolver un string vacío si no se encuentra el usuario
+      return ""; 
     }
   } catch (error) {
     console.error("Error al obtener el password de MongoDB:", error);
-    return ""; // Devolver un string vacío en caso de error
+    return ""; 
   }
 }
+
 
 
 

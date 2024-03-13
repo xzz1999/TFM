@@ -1,63 +1,61 @@
-/**
- * API Route - List Messages in a Thread
- *
- * This API route is responsible for retrieving messages from a specific chat thread using the OpenAI API.
- * It processes POST requests that include a 'threadId' in the form data. The route fetches the messages
- * associated with the provided thread ID and returns them in a structured JSON format. It's designed to
- * facilitate the tracking and review of conversation threads created and managed via OpenAI's GPT models.
- *
- * Path: /api/listMessages
- */
+
 
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from "openai";
+import { botData } from '@/app/lib/actions';
 
-// Initialize OpenAI client using the API key from environment variables
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 // Define an asynchronous POST function to handle incoming requests
 export async function POST(req: NextRequest) {
+        //extraer la clave de cabecera
+        const botId = req.headers.get('id');
+        //debug
+        console.log("id en listMessage:", botId);
+        let bot;
+        if(botId){
+          bot = await botData(botId);
+        }
+        // debug
+        console.log("bot:",bot);
+        if (!bot) {
+          console.log('No API key provided');
+          return NextResponse.json({ success: false, message: 'API key is required' });
+        }
+        const token = bot.token;
+       
+      
+          // Inicializar OpenAI
+          const openai = new OpenAI({
+            apiKey: token
+          });
   try {
     // Extract JSON data from the request
     const data = await req.json();
 
     // Retrieve 'threadId' from JSON data
     const threadId = data.threadId;
-
-    // Log the received thread ID for debugging
-    console.log(`Received request with threadId: ${threadId}`);
-
-    // Retrieve messages for the given thread ID using the OpenAI API
+    const runId = data.runId;
+    const run = await openai.beta.threads.runs.retrieve(
+      threadId,
+      runId
+    )
+    console.log("run:",run.status);
+    if(run.status=="completed"){
+      
     const messages = await openai.beta.threads.messages.list(threadId);
-    
-    messages.data.forEach((message, index) => {
-      console.log(`Message ${index + 1} content:`, message.content);
-    });
-    // Log the count of retrieved messages for debugging
     console.log(`Retrieved ${messages.data.length} messages`);
-
-    
-    // Find the first assistant message
-    const assistantMessage = messages.data.find(message => message.role === 'assistant');
-
-    if (!assistantMessage) {
-      return NextResponse.json({ error: "No assistant message found" });
+    if(messages){
+      console.log("mensaje:",messages.data[0].content);
+      return NextResponse.json({ messages: messages.data[0].content[0] });
+    }else{
+      return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 });
+    }
     }
 
-    const assistantMessageContent = assistantMessage.content.at(0);
-    if (!assistantMessageContent) {
-      return NextResponse.json({ error: "No assistant message content found" });
-    }
-
-    if (assistantMessageContent.type !== "text") {
-      return NextResponse.json({ error: "Assistant message is not text, only text supported in this demo" });
-    }
-    // Return the retrieved messages as a JSON response
-    return NextResponse.json({ ok: true, messages: assistantMessageContent.text.value });
-  } catch (error) {
-    // Log any errors that occur during the process
-    console.error(`Error occurred: ${error}`);
+  }catch(e){
+    console.error("error en fetch mensajes", e);
   }
 }
+
+
+    
