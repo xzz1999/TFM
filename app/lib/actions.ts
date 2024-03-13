@@ -298,6 +298,55 @@ export async function getPassword(correo: string): Promise<string> {
   }
 }
 
+// funcion que devulve el el posicion de array que se encuentra el usario
+
+export async function getIndex (correo:string,botId:string){
+  try{
+  await client.connect();
+  const database = client.db("TFM");
+  const collection = database.collection("botUsers");
+  const user = await collection.findOne({ id: botId });
+  if(user) {
+     const index = user.correo.indexOf(correo);
+     return index;
+  }else {
+    console.log('usuario no encontrado');
+}
+  }catch(e){
+    console.log("error en la busquedad de indice:", e);
+  }finally {
+    await client.close(); 
+}
+}
+
+
+// funcion que devuleve el correo de usuario por su indice y botID
+export async function getEmail (botId:string,index: number){
+
+  try {
+    await client.connect();
+    const database = client.db("TFM");
+    const collection = database.collection("botUsers");
+  
+    const user = await collection.findOne({ id: botId });
+    
+    if (user) {
+        
+            return user.correo[index]; 
+    
+        } else {
+        console.log("Usuario del bot no encontrado");
+    }
+} catch (error) {
+    console.log("error en buscar el correo");
+   
+} finally {
+    await client.close(); 
+}
+}
+
+
+
 
 
 

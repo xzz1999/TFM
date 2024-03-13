@@ -1,13 +1,14 @@
         import { useEffect, useRef, useState } from 'react';
         import './chatBox.css';
-        import { useRouter, useSearchParams } from 'next/navigation';
+        import { useSearchParams } from 'next/navigation';
+        import { getEmail } from '@/app/lib/actions';
         import { getHilo } from '@/app/lib/actions';
         import { BsRobot  } from "react-icons/bs";
         import { PiStudent } from "react-icons/pi";
 
 
         export default function ChatBar() {
-            const router = useRouter();
+            
             const [messages, setMessages] = useState([]);
             const [newMessage, setNewMessage] = useState('');
             const endOfMessagesRef = useRef(null);
@@ -15,7 +16,6 @@
             const [botId, setBotId] = useState('');
             const [threadId, setThreadId] = useState('');
             const [user, setUser] = useState('');
-            const [runId, setRunId] = useState('');
             const [isLoading, setIsLoading] = useState(true);
 
             useEffect(() => {
@@ -33,11 +33,13 @@
                 if (!botId || !user) return;
 
                 const initThread = async () => {
-                    const correo = user + "@alumnos.upm.es";
+                    const correo = await getEmail(botId,user);
+                    setIsLoading(true);
                     try {
                         const hilo = await getHilo(botId, correo);
                         console.log(hilo);
                         setThreadId(hilo);
+                        setIsLoading(false);
                     } catch (error) {
                         console.error("Error en encontrar threadId:", error);
                     }
@@ -46,26 +48,12 @@
                 initThread();
             }, [botId, user]);
 
+        
             useEffect(() => {
-                if (!botId || !threadId) return;
-                const initAssistant = async ()=>{
-                    setIsLoading(true);
-                    try{
-                    const run = await runAssistant (botId,threadId);
-                    setRunId(run)
-                    setIsLoading(false);
-                    }catch(error){
-                        console.log("error en ejecutar el asistente:",error);
-                    }
-   
-            };
-               initAssistant()
-            }, [botId, threadId]);
-            useEffect(() => {
-                if(!runId) return;
+                if(!threadId) return;
                     setMessages([{ text: "Hola, ¿en qué puedo ayudarte?", sender: "bot" }]);
 
-            },[runId]);
+            },[threadId]);
             // LISTAR LOS MENSAJES DE ASSISTENTE
             const fetchMessages = async (hilo) => {
                 try {
@@ -84,8 +72,7 @@
 
                     const data = await response.json();
                     if (data) {
-                        console.log("data:",data);
-                        //setMessages(prevMessages => [...prevMessages, ...data.messages.map(msg => ({text: msg, sender: "user"}))]);
+                        return data.messages.text.value;
                     } else {
                         console.error('No messages found', data.error);
                     }
@@ -140,50 +127,47 @@
                     throw new Error(`Error: ${response.status}`);
                   }
                   const data = await response.json();
+                  console.log("data.runId:",data.runId);
                   return data.runId;
                 } catch (error) {
                   console.error('error en ejecutar el asistente:', error.message);
                 }
               }
               // CHECKEAR SI EL ASSISTENTE SIGUEN EN EJECUCION
-              const  checkAssistant = async (threadId, runId) =>{
+              const checkAssistant = async (threadId, runId) => {
                 try {
-                  
-                  const requestBody = {
-                    runId: runId,
-                    threadId: threadId,
-                  };
+                  const requestBody = { runId, threadId };
                   const response = await fetch('/api/openAI/checkRunStatus', {
                     method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'id': botId
-                    },
+                    headers: { 'Content-Type': 'application/json', 'id': botId },
                     body: JSON.stringify(requestBody),
                   });
                   if (!response.ok) {
                     throw new Error(`Error: ${response.status}`);
                   }
                   const data = await response.json();
+                  if (data.status !== "completed") {
+                    console.log("Asistente aún en ejecución, revisando de nuevo...");
+                    await new Promise(resolve => setTimeout(resolve, 2000)); 
+                    return checkAssistant(threadId, runId); 
+                  }
                   return data;
                 } catch (error) {
-                  console.error('error en ejecutar el asistente:', error.message);
+                  console.error('Error al ejecutar el asistente:', error.message);
+         
                 }
-              }
-            
+              };
 
             const handleSendMessage = async (e) => {
                 e.preventDefault();
                 if (!newMessage.trim()) return;
-                setMessages([...messages, {text: newMessage, sender: "user"}]);
+                setMessages(prevMessages => [...prevMessages, { text: newMessage, sender: "user" }]);
+                setNewMessage('');
                 try{
-                    const check  = await checkAssistant(threadId,runId);
-                    
-                    if(check.status == "completed"){
-
+                
                         const mensaje ={
                             'threadId' : threadId,
-                            'input': newMessage 
+                            'input': newMessage,
                         }
                         try{
                             await enviarMensaje (mensaje);
@@ -191,33 +175,34 @@
                         }catch(error){
                             console.log("error en mandar el mensaje:",error);
                         }
-                        setNewMessage('');
                         try{
-                            const id ={
-                                "threadId" : threadId,
-                                "runId": runId
-                            }
-
-                            const mensajes = await fetchMessages(id);
-                            console.log("mensajes:", mensajes.messages);
+                            const id = await runAssistant (botId,threadId);
+                            if(id){
+                                try{
+                                    await checkAssistant(threadId, id);
+                                    const conversation ={
+                                        "threadId" : threadId,
+                                    }
         
-                        }catch(error){
-                            console.log("error en obtener respuestas:", error);
+                                    const mensajes = await fetchMessages(conversation);
+                                    if(mensajes){
+                          
+                                        setMessages(prevMessages => [...prevMessages, { text: mensajes, sender: "bot" }]); 
+                                    }
+                                    console.log("mensajes:", messages);
+                                    
+                                }catch(error){
+                                    console.log("error en obtener respuestas:", error);
+                                }
+                            }  
+                        }catch(e){
+                            console.log("error en ejecutar el asistente:",e);
                         }
-                        }else{
-                    try{
-                    const newRunId = await runAssistant(botId, threadId);
-                    setRunId(newRunId);
-                    console.log("Nuevo runId:", newRunId);
-                    return handleSendMessage(e);
-                    }catch(error){
-                        console.log("error en volver a ejecutar el assistente:", error);
-                    }
-                }
-
                     
-                }catch(error){
-                    console.log("error en checkear el assistente:", error); 
+                       
+                            
+            }catch(error){
+                    console.log("error en en la ejecucion:", error); 
                     
                 }
                 
@@ -245,14 +230,13 @@
                         {message.sender === 'bot' ? (
                             <>
                                 <BsRobot className="chatbot-icon" />
-                                <p>{message.text}</p>
-                            </>
+                                <p>{message.text}</p></>
                         ) : (
-                            <>
-                                <p>{message.text}</p>
-                                <PiStudent className="user-icon" />
-                            </>
+                            <>  
+                                <PiStudent className="user-icon" /> 
+                                <p>{message.text}</p> </>
                         )}
+                        
                     </div>
                 ))}
                 <div ref={endOfMessagesRef} />
