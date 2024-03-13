@@ -34,23 +34,23 @@ export async function POST(req: NextRequest) {
 
     // Retrieve 'threadId' from JSON data
     const threadId = data.threadId;
-    const runId = data.runId;
-    const run = await openai.beta.threads.runs.retrieve(
-      threadId,
-      runId
-    )
-    console.log("run:",run.status);
-    if(run.status=="completed"){
+    //const runId = data.runId;
+    //const run = await openai.beta.threads.runs.retrieve(
+    //  threadId,
+    //  runId
+   // )
+    //console.log("run:",run.status);
+    //if(run.status=="completed"){
       
     const messages = await openai.beta.threads.messages.list(threadId);
+
     console.log(`Retrieved ${messages.data.length} messages`);
     if(messages){
-      console.log("mensaje:",messages.data[0].content);
       return NextResponse.json({ messages: messages.data[0].content[0] });
     }else{
       return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 });
     }
-    }
+    //}
 
   }catch(e){
     console.error("error en fetch mensajes", e);

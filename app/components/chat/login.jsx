@@ -1,6 +1,6 @@
 import React from 'react';
 import './login.css';
-import { addUsers, addThread, getHilo} from '@/app/lib/actions';
+import { addUsers, addThread, getIndex} from '@/app/lib/actions';
 import { useEffect, useState } from 'react';
 import { useSearchParams,useRouter } from 'next/navigation'
 //import {useUser} from '@/app/components/chat/chatContext';
@@ -31,8 +31,8 @@ export default function Login() {
         await addThread (hilo.threadId, botId);
         }
         
-        const name = correo.split("@")[0];
-        router.push(`/chats/user?botId=${botId}&user=${name}`);
+        const id = await getIndex(correo,botId);
+        router.push(`/chats/user?botId=${botId}&user=${id}`);
       
         
        

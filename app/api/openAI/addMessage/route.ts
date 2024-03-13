@@ -46,11 +46,13 @@ export async function POST(req: NextRequest) {
     console.log("data:",data);
     const threadId = data.threadId;
     const input = data.input;
+    const runId = data.runId;
   
 
     // Log the received thread ID, input, and fileIds for debugging purposes
     console.log(`inside add_Message -Thread ID: ${threadId}`);
     console.log(`inside add_Message -Input: ${input}`);
+    console.log(`inside add_Message -Input: ${runId}`)
  
 
     // Validate the input data
@@ -64,9 +66,12 @@ export async function POST(req: NextRequest) {
         role: "user",
         content: input,
       });
+     
+     
       console.log("add_Message successfully");
       return NextResponse.json({ message: "Message created successfully" });
-    }
+      }
+    
 
     // Respond with a message indicating no action was performed if input is empty
     return NextResponse.json({ message: 'No action performed' });
