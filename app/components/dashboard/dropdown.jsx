@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Button } from '@/app/components/button'; // Asegúrate de que la ruta de importación sea correcta
+import { Button } from '@/app/components/button'; 
 
 const Dropdown = ({ options, onSelectionChange }) => {
   const [selectedOption, setSelectedOption] = useState(options[0]);
 
   // Manejador para el evento de clic en el botón de enviar
   const handleSubmit = () => {
-    // Llamada a la función pasada como prop para actualizar el estado en el componente padre
+    
     onSelectionChange(selectedOption);
   };
 

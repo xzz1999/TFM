@@ -76,3 +76,33 @@
         order: 1;
         margin-right: 8px; 
     }
+    .dot-animation {
+        display: flex;
+        align-items: center;
+      }
+      
+      .dot {
+        background-color: #000; /* Cambia el color según tu diseño */
+        border-radius: 50%;
+        width: 8px; /* Tamaño del punto */
+        height: 8px; /* Tamaño del punto */
+        margin: 0 4px; /* Espacio entre los puntos */
+        animation: dotFlashing 1.5s infinite linear both;
+      }
+      
+      .dot:nth-child(1) {
+        animation-delay: 0s;
+      }
+      
+      .dot:nth-child(2) {
+        animation-delay: 0.5s;
+      }
+      
+      .dot:nth-child(3) {
+        animation-delay: 1s;
+      }
+      
+      @keyframes dotFlashing {
+        0% { background-color: #000; }
+        50%, 100% { background-color: transparent; }
+      }

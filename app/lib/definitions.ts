@@ -30,3 +30,11 @@ export type  dataMessage = {
   threadId: string
   input: string
 };
+
+export type dataConversation = {
+  student: string
+  bot: string
+  Time:Date
+  question: string
+  answer: string
+}

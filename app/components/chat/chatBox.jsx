@@ -1,10 +1,13 @@
         import { useEffect, useRef, useState } from 'react';
         import './chatBox.css';
         import { useSearchParams } from 'next/navigation';
-        import { getEmail } from '@/app/lib/actions';
+        import { getEmail,setConversation } from '@/app/lib/actions';
         import { getHilo } from '@/app/lib/actions';
         import { BsRobot  } from "react-icons/bs";
         import { PiStudent } from "react-icons/pi";
+        
+        
+
 
 
         export default function ChatBar() {
@@ -17,7 +20,7 @@
             const [threadId, setThreadId] = useState('');
             const [user, setUser] = useState('');
             const [isLoading, setIsLoading] = useState(true);
-
+            const [isProcessing, setIsProcessing] = useState(false);
             useEffect(() => {
                 const botIdValue = searchParams.get('botId') || "";
                 const userValue = searchParams.get('user') || "";
@@ -160,9 +163,19 @@
 
             const handleSendMessage = async (e) => {
                 e.preventDefault();
+                const correo = await getEmail(botId,user);
+                const interaccion = {
+                    bot : botId,
+                    Time: new Date().toISOString(),
+                    student: correo
+
+                }
                 if (!newMessage.trim()) return;
                 setMessages(prevMessages => [...prevMessages, { text: newMessage, sender: "user" }]);
+                interaccion.question = newMessage;
                 setNewMessage('');
+                setIsProcessing(true);
+                
                 try{
                 
                         const mensaje ={
@@ -186,11 +199,16 @@
         
                                     const mensajes = await fetchMessages(conversation);
                                     if(mensajes){
-                          
+                                        interaccion.answer = mensajes;
+                                        setIsProcessing(false);
                                         setMessages(prevMessages => [...prevMessages, { text: mensajes, sender: "bot" }]); 
+                                        try{
+                                            await setConversation(interaccion);
+                                        }catch(e){
+                                            console.log("error en guardar la conversacion:",e);
+                                        }
                                     }
-                                    console.log("mensajes:", messages);
-                                    
+                                    //console.log("conversacion:",conversacion);
                                 }catch(error){
                                     console.log("error en obtener respuestas:", error);
                                 }
@@ -239,6 +257,16 @@
                         
                     </div>
                 ))}
+                {isProcessing && (
+                <div className="message left">
+                <BsRobot className="chatbot-icon" />
+                <div className="dot-animation">
+                <span className="dot"></span>
+                 <span className="dot"></span>
+                <span className="dot"></span>
+                </div>
+                 </div>
+                )}
                 <div ref={endOfMessagesRef} />
             </div>
             <form onSubmit={handleSendMessage} className="message-form">

@@ -2,7 +2,7 @@
 
 import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
-import {datafichero,dataBot,dataRequire} from '@/app/lib/definitions'
+import {datafichero,dataBot,dataRequire,dataConversation} from '@/app/lib/definitions'
 import {MongoClient} from 'mongodb';
 const uri = "mongodb://127.0.0.1:27017";
 const client = new MongoClient(uri);
@@ -346,7 +346,62 @@ export async function getEmail (botId:string,index: number){
 }
 
 
+// funcion que añade las iteraciones de usuario con el bot al base de datos Mongo
+export async function setConversation(conversation:dataConversation){
+  try{
+    await client.connect();
+    const database = client.db("TFM");
+    const collection = database.collection("Conversations");
+    await collection.insertOne(conversation);
+    await client.close()
 
+  }catch(e){
+    console.log("error en insertar una query en mongodb:",e);
+  }
+}
+// funcion que devuelve la lista entera de bots existentes
+export async function getBotList(){
+  try{
+    await client.connect();
+    const database = client.db("TFM");
+    const collection = database.collection("bots");
+    const bots = await collection.find({}).toArray();
+    await client.close()
+    const botList = bots.map(bot => ({
+      id: bot.Id,
+      name: bot.name
+    }));
 
+    return botList;
 
+  }catch(e){
+    console.log("error en obtener la lista de bot en mongodb:",e);
+  }
+}
+// funcion que devuelve todas los usuarios asociados de un bot
+export async function getUsersList(bot:string){
+  try{
+    await client.connect();
+    const database = client.db("TFM");
+    const collection = database.collection("botUsers");
+    const query = { id: bot };
+    const options = {
+      projection: { _id: 0, correo: 1 },
+    };
+    const users = await collection.find(query, options).toArray();
+    const emailsAndIndices = users.flatMap((user, userIndex) =>
+        user.correo.map((email:String, emailIndex:number) => ({
+          email,
+          index: emailIndex,
 
+    }))
+  );
+    //debug
+    console.log("usuarios:", emailsAndIndices);
+    return emailsAndIndices;
+  }catch(e){
+    console.log("error en obtener la lista de bot en mongodb:",e);
+  }finally{
+    await client.close()
+  }
+}
