@@ -13,6 +13,7 @@ const bot = ({ onOptionSelected }) => {
               label: bot.name, 
               value: bot.id 
             }));
+            console.log("bot, formattedOptions:", formattedOptions);
             setOptions(formattedOptions);
           } catch (error) {
             console.error("Error al obtener la lista de bots:", error);

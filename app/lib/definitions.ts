@@ -38,3 +38,8 @@ export type dataConversation = {
   question: string
   answer: string
 }
+export type dataGetConversation = {
+  bot:string
+  user: string | null
+  Time: Date | null
+}

@@ -2,7 +2,7 @@
 
 import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
-import {datafichero,dataBot,dataRequire,dataConversation} from '@/app/lib/definitions'
+import {datafichero,dataBot,dataRequire,dataConversation, dataGetConversation} from '@/app/lib/definitions'
 import {MongoClient} from 'mongodb';
 const uri = "mongodb://127.0.0.1:27017";
 const client = new MongoClient(uri);
@@ -371,7 +371,7 @@ export async function getBotList(){
       id: bot.Id,
       name: bot.name
     }));
-
+    console.log("botList:",botList);
     return botList;
 
   }catch(e){
@@ -380,6 +380,7 @@ export async function getBotList(){
 }
 // funcion que devuelve todas los usuarios asociados de un bot
 export async function getUsersList(bot:string){
+   
   try{
     await client.connect();
     const database = client.db("TFM");
@@ -389,6 +390,7 @@ export async function getUsersList(bot:string){
       projection: { _id: 0, correo: 1 },
     };
     const users = await collection.find(query, options).toArray();
+    
     const emailsAndIndices = users.flatMap((user, userIndex) =>
         user.correo.map((email:String, emailIndex:number) => ({
           email,
@@ -396,12 +398,40 @@ export async function getUsersList(bot:string){
 
     }))
   );
-    //debug
-    console.log("usuarios:", emailsAndIndices);
+    
     return emailsAndIndices;
   }catch(e){
     console.log("error en obtener la lista de bot en mongodb:",e);
   }finally{
     await client.close()
   }
+}
+
+// funcion que devuelve  las conversaciones
+export async function getCoversation(data:dataGetConversation){
+  try{
+    await client.connect();
+    const database = client.db("TFM");
+    const collection = database.collection("Conversations");
+    let query = {};
+    if (data.Time && data.user) {
+      query = { bot: data.bot,Time: data.Time, student: data.user };
+    } else if (data.Time && !data.user) {
+      query = { bot: data.bot,Time: data.Time };
+    } else if (!data.Time && data.user) {
+      query = { bot: data.bot,student: data.user };
+    }else{
+      query = { bot: data.bot };
+    }
+    const projection = { bot: 1, Time: 1, student: 1, question: 1, answer: 1 };
+    const cursor = collection.find(query).project(projection);
+    const conversations = await cursor.toArray();
+    return conversations;
+  }catch(e){
+    console.log("error en obtener la conversacion:",e);
+  }finally{
+
+    await client.close()
+  }
+
 }

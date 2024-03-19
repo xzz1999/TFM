@@ -6,7 +6,12 @@ const Dropdown = ({ options, onSelectionChange }) => {
     
     const selectedOption = options.find(option => option.value === event.target.value);
     
-    onSelectionChange(selectedOption);
+    if (typeof onSelectionChange === 'function') {
+      console.log("dropdown selectedOption:", selectedOption);
+      onSelectionChange(selectedOption);
+    } else {
+      console.warn('onSelectionChange no es una función');
+    }
   };
 
   return (

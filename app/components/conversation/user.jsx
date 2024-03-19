@@ -1,35 +1,33 @@
 "use client";
-import {getUsersList} from '@/app/lib/actions';
+import {getUsersList, getBotList} from '@/app/lib/actions';
 import React, { useState, useEffect } from 'react';
 import Dropdown from './dropdown';
 
-const users = ({ onOptionSelectedUser, bot}) => {
-    const [options, setOptions] = useState([]);
-    useEffect(() => {
-        const fetchUsers = async () => {
-          console.log("Bot:", bot);
-          if(bot){
-            try {
-                const botList = await getUsersList(bot);
-                const formattedOptions = botList.map(user => ({
-                  label: user.email, 
-                  value: user.index 
-                }));
-                setOptions(formattedOptions);
-              } catch (error) {
-                console.error("Error al obtener la lista de bots:", error);
-              }
-          }
-          
-        };
-        fetchUsers();
-      }, []); 
+const user = ({ onOptionSelected, bot }) => {
+  const [options, setOptions] = useState([]);
 
+  useEffect(() => {
+    const fetchUsers = async () => {
+      if (bot) {
+        try {
+          const userList = await getUsersList(bot);
+          const formattedOptions = userList.map(user => ({
+            label: user.email, 
+            value: user.index.toString() 
+          }));
+          const OptionExtra = { label: 'Todo', value: 'todo' };
+          const options = [OptionExtra, ...formattedOptions];
+          setOptions(options);
+        } catch (error) {
+          console.error("Error al obtener la lista de usuarios:", error);
+        }
+      }
+    };
+    fetchUsers();
+  }, [bot]); 
   return (
-    <div>
-      <Dropdown options={options} onSelectionChange={onOptionSelectedUser} />
-    </div>
+    <Dropdown options={options} onSelectionChange={onOptionSelected} />
   );
 };
 
-export default users;
+export default user;
