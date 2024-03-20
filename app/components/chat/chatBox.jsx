@@ -166,7 +166,7 @@
                 const correo = await getEmail(botId,user);
                 const interaccion = {
                     bot : botId,
-                    Time: new Date().toISOString(),
+                    Time: new Date(),
                     student: correo
 
                 }

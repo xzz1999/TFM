@@ -2,35 +2,57 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-    /* Añadir un poco de padding si quieres espacio alrededor de los mensajes */
-    padding: 10px 0;
 }
 
 .message {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     border-radius: 8px;
     padding: 10px;
     max-width: 60%;
-    border: 1px solid #ccc; /* Añade un borde ligero para definir el cuadro */
-    background-color: #fff; /* Fondo blanco para los mensajes */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra sutil para efecto elevado */
-    margin: auto; /* Centrar los mensajes si deseas */
-}
-
-.left, .right {
-    /* Asegura que el contenido se justifique hacia los lados correctamente */
-    justify-content: space-between;
+    background-color: #f0f0f0; 
 }
 
 .left {
-    background-color: #f0f0f0;
+    align-items: flex-start; 
 }
 
 .right {
-    background-color: #d1e7dd;
+    align-items: flex-end; 
+    background-color: #d1e7dd; 
 }
 
-.user-icon, .chatbot-icon {
+.message-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; 
+    width: 100%;
+}
+
+.sender-info {
+    display: flex;
+    align-items: center;
     margin: 0 10px;
+}
+
+.sender-info strong {
+    font-weight: bold; 
+    margin-left: 10px; 
+}
+
+.date-info {
+    margin-left: auto; 
+    font-size: 0.8em; 
+}
+
+.icon {
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.pi-student, .bs-robot {
+    font-size: 1.2em; 
 }

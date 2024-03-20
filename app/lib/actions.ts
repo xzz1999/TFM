@@ -414,18 +414,47 @@ export async function getCoversation(data:dataGetConversation){
     const database = client.db("TFM");
     const collection = database.collection("Conversations");
     let query = {};
-    if (data.Time && data.user) {
-      query = { bot: data.bot,Time: data.Time, student: data.user };
-    } else if (data.Time && !data.user) {
-      query = { bot: data.bot,Time: data.Time };
-    } else if (!data.Time && data.user) {
+    console.log("getConversation user:", data.user);
+    console.log("getConversation Time:", data.Time);
+    console.log("getConversation bot:", data.bot);
+    if (data.Time && data.user != 'Todo') {
+      const startTime = new Date(data.Time);
+      startTime.setUTCHours(0, 0, 0, 0);  
+      console.log("startTime:",startTime);
+      const endTime = new Date(data.Time);
+      endTime.setUTCHours(23, 59, 59, 999);
+      console.log("endTime:",endTime);
+      query = { 
+        bot: data.bot, 
+        student : data.user,
+        Time: { $gte: startTime, $lt: endTime }
+      };
+    } else if (data.Time && data.user == 'Todo') {
+      const startTime = new Date(data.Time);
+      startTime.setUTCHours(0, 0, 0, 0); 
+      const endTime = new Date(data.Time);
+      endTime.setUTCHours(23, 59, 59, 999);
+      query = { 
+        bot: data.bot, 
+        Time: { $gte: startTime, $lt: endTime }
+      };
+
+      
+    } else if (!data.Time && data.user != "Todo") {
       query = { bot: data.bot,student: data.user };
-    }else{
+    }else if (!data.Time && data.user == "Todo"){
       query = { bot: data.bot };
     }
     const projection = { bot: 1, Time: 1, student: 1, question: 1, answer: 1 };
     const cursor = collection.find(query).project(projection);
-    const conversations = await cursor.toArray();
+    let conversations = await cursor.toArray();
+    conversations = conversations.map(({ bot, Time, student, question, answer}) => ({
+      bot,
+      Time,
+      student,
+      question,
+      answer
+    }));
     return conversations;
   }catch(e){
     console.log("error en obtener la conversacion:",e);
