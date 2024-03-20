@@ -33,8 +33,12 @@ const  conversationsPage = () => {
     console.log("selectedDate:",selectedDate);
   };
   const handleSubmit = () => {
-    if (!bot) {
+    if (!bot  ) {
       alert("Por favor, seleccione un bot antes de enviar.");
+      return; 
+    }
+    if (!user ) {
+      alert("Por favor, seleccione un usuario o todos.");
       return; 
     }
     router.push(`/dashboard/conversations/visualizer?bot=${bot}&user=${user}&date=${date}`);

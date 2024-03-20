@@ -1,11 +1,14 @@
+
 'use client';
 import { lusitana,roboto} from '@/app/components/fonts';    
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState,useRef } from 'react';
 import {getCoversation} from '@/app/lib/actions';
-import { BsRobot } from 'react-icons/bs'; 
-import { PiStudent } from 'react-icons/pi';
-import  './Visualizer.css';
+import './Visualizer.css';
+import {botData} from '@/app/lib/actions';
+import { BsRobot  } from "react-icons/bs";
+import { PiStudent } from "react-icons/pi";
+
 const  visualizerPage = () => {
 
     const searchParams = useSearchParams();
@@ -14,6 +17,7 @@ const  visualizerPage = () => {
     const [date, setDate] = useState("");
     const [messages, setMessages] = useState([]);
     const endOfMessagesRef = useRef(null);
+    const [botName, setBotName] = useState("");
     useEffect(() => {
         const a = searchParams.get('bot');
         setBot(a);
@@ -24,6 +28,7 @@ const  visualizerPage = () => {
         
     },  []);
     useEffect(() => {
+        findBotName();
         findConversation();
       }, [bot, user, date]);
 
@@ -37,45 +42,68 @@ const  visualizerPage = () => {
             const mensajes = await getCoversation(data);
             if(mensajes){
                 
-                const adaptedMessages = mensajes.map(mensaje => ({
-                    text: mensaje.question, 
-                    sender: 'user' 
-                })).concat(mensajes.map(mensaje => ({
-                    text: mensaje.answer, 
-                    sender: 'bot'
-                })));
+                const adaptedMessages = mensajes.map(mensaje => ([
+                    {
+                        text: mensaje.question, 
+                        sender: 'user',
+                        student: mensaje.student,
+                        date: mensaje.Time 
+                    },
+                    {
+                        text: mensaje.answer, 
+                        sender: 'bot',
+                        date: mensaje.Time
+                    }
+                ])).flat();(adaptedMessages);
                 setMessages(adaptedMessages);
             }
-
-            
         } catch (error) {
             console.error('Error al enviar correo a la API:', error);
         }
     };
+    const findBotName = async () => {
+        try{
+            const name = await botData(bot);
+            if(name){
+            setBotName(name.name);
+            }
+
+        }catch(e){
+            console.log("Error en busquedad de nombre de bot:",e);
+        }
+    }
+
 
     return (
         <div className="chat-bar">
             <div className="messages">
-                {messages.map((message, index) => (
-                    <div key={index} className={`message ${message.sender === 'user' ? 'left' : 'right'}`}>
-                        {message.sender === 'user' ? (
-                            <>
-                                {/* Reemplaza PiStudent por el ícono correcto de usuario */}
-                                <PiStudent className="user-icon" />
-                                <p>{message.text}</p>
-                            </>
-                        ) : (
-                            <>
-                                <BsRobot className="chatbot-icon" />
-                                <p>{message.text}</p>
-                            </>
-                        )}
-                    </div>
-                ))}
+                {messages.length > 0 ? (
+                    messages.map((message, index) => (
+                        <div key={index} className={`message ${message.sender === 'user' ? 'left' : 'right'}`}>
+                            <div className="message-header">
+                                {message.sender === 'user' ? (
+                                    <>
+                                        <PiStudent className="icon" />
+                                        <p className="sender-info"><strong>{message.student || user}</strong></p>
+                                        
+                                    </>
+                                ) : (
+                                    <>
+                                        <BsRobot className="icon" />
+                                        <p className="sender-info"><strong>{botName}</strong></p>
+                                    </>
+                                )}
+                                <p className="date-info">{new Date(message.date).toLocaleString()}</p>
+                            </div>
+                            <p>{message.text}</p>
+                        </div>
+                    ))
+                ) : (
+                    <div className="no-messages">No hay mensajes para mostrar.</div>
+                )}
                 <div ref={endOfMessagesRef} />
             </div>
         </div>
     );
 };
-
 export default visualizerPage;
