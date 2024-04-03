@@ -134,6 +134,7 @@ export async function addBot(fichero: any) {
 
 //actualizar un bot
 export async function updateBot(id:string, datos: dataBot){
+  console.log("data:",datos);
   try{
     await client.connect();
     const database = client.db("TFM");
@@ -151,8 +152,8 @@ export async function updateBot(id:string, datos: dataBot){
   }catch (error) {
     console.error('Error updating bot:', error);
   }
-}
 
+}
 
 // verifica si los datos de bot no son nulos
 export async function isDataNull  (data:dataRequire)  {
@@ -186,8 +187,8 @@ export async function getBot () {
 
 // funcion que devuelve los datos de un bot identificado por su id
 export async function botData (botId: string | null){
-  //debug
-  console.log("botData");
+  
+
   try{
     await client.connect();
     const database = client.db("TFM");

@@ -9,8 +9,8 @@
   import React, { useState } from 'react'; 
   import { Button } from '@/app/components/button'; 
   import {isDataNull} from '@/app/lib/actions'  
-
-
+  import {addBot} from '@/app/lib/actions';
+  import { v4 as uuidv4 } from 'uuid';
 
   const  Page = () => {
 
@@ -19,9 +19,10 @@
     const [name, setName] = useState("");
     const [role, setRole] = useState("");
     const [files, setFiles] = useState([]);
+    const [apiSelected, setApiSelected] = useState(false);
     const handleOptionSelected  = (selectedOption) => {
       setSelectAI(selectedOption.value);
-      
+      setApiSelected(true);
     };
 
 
@@ -45,6 +46,9 @@
     
       setFiles(selectedFiles);
     };
+    const generateId = () => {
+      return uuidv4(); 
+    };
 
     const handleCreate = async () => {
       const dataToSend = {
@@ -54,86 +58,102 @@
         assistantToken: token
       };
       const verifier = await isDataNull(dataToSend);
-      console.log("verifier:",verifier);
       if(verifier){
-      try {
         
-        console.log("files:",files);
-        const files_ids = [];
-        for (const file of files) {
-          const formData = new FormData();
-          formData.append('file', file); 
-          const uploadResponse = await fetch('/api/openAI/uploadFile', {
-            method: 'POST',
-            headers: {
-              'key' : token,
-            } ,
-            body: formData,
-          });
-    
-          if (!uploadResponse.ok) {
-            throw new Error('Network response was not ok during file upload');
+        if(selectAI === "Gemini 1.0 Pro"){
+          const id = generateId();
+          try{
+            const data ={
+              Id: id,
+              name: name,
+              ai: selectAI,
+              token: token,
+              role: role,
+              fileId: files
+            }
+            const add = await addBot(data);
+            if(add){
+              alert("Asistente creado exitosamente.");
+              
+            }
+          }catch(error){
+            alert(`Error: ${error.message}`); 
           }
-          
-          const uploadResult = await uploadResponse.json();
-          //debug
-          console.log("uploadResponse:",uploadResponse);
-          //debug
-          console.log("uploadresult:",uploadResult.fileId);
-      if (uploadResult.error) {
-        console.error('Error uploading file:', uploadResult.error);
-      }
-      // debug
-      console.log("uploadResult:",uploadResult)
-      
-      files_ids.push(uploadResult.fileId);
-    }
-    dataToSend.files = files_ids;
-    
-    
-      try {
-        const response = await fetch('/api/openAI/createAssistant', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(dataToSend),
-        });
-    
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
         }
+        else if(selectAI === "gpt-3.5-turbo" || selectAI === "gpt-4-1106-preview"){
+          try {
+            console.log("files:", files);
+            const files_ids = [];
+            for (const file of files) {
+              const formData = new FormData();
+              formData.append('file', file);
+              const uploadResponse = await fetch('/api/openAI/uploadFile', {
+                method: 'POST',
+                headers: {
+                  'key' : token,
+                },
+                body: formData,
+              });
     
-        const responseData = await response.json();
-        if (responseData.error) {
-          console.error('Error creating assistant:', responseData.error);
-          alert(`Error: ${responseData.error}`); 
+              if (!uploadResponse.ok) {
+                throw new Error('Network response was not ok during file upload');
+              }
+    
+              const uploadResult = await uploadResponse.json();
+              console.log("uploadResponse:", uploadResponse);
+              console.log("uploadresult:", uploadResult.fileId);
+              if (uploadResult.error) {
+                console.error('Error uploading file:', uploadResult.error);
+              }
+              console.log("uploadResult:", uploadResult);
+    
+              files_ids.push(uploadResult.fileId);
+            }
+            dataToSend.files = files_ids;
+    
+            try {
+              const response = await fetch('/api/openAI/createAssistant', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(dataToSend),
+              });
+    
+              if (!response.ok) {
+                throw new Error('Network response was not ok');
+              }
+    
+              const responseData = await response.json();
+              if (responseData.error) {
+                console.error('Error creating assistant:', responseData.error);
+                alert(`Error: ${responseData.error}`);
+              } else {
+                console.log('Assistant created successfully:', responseData.assistantId);
+                alert(`Assistant created successfully. ID: ${responseData.assistantId}`);
+                // Restablecer estados aquí si es necesario
+              }
+            }catch(error){
+              console.error("Error en crear asistente:", error);
+            } 
+          }catch (error) {
+            console.error('Error in handleCreate:', error);
+            alert(`Error: ${error.message}`); 
           }
-          console.log('Assistant created successfully:', responseData.assistantId);
-          alert(`Assistant created successfully. ID: ${responseData.assistantId}`);
-          setToken("");
-          setRole("");
-          setName("");
-          setFiles([]);
-          setSelectAI("");
-        
-      }catch(error){
-        console.error("Error en crear assistente:",error);
-      } 
-    }catch (error) {
-        console.error('Error in handleCreate:', error);
-        alert(`Error: ${error.message}`); 
+        }
+        else {
+          alert("Modelo de IA no soportado o desconocido.");
+        }
+      }else{
+        alert("Missing required assistant parameters");
       }
-    }else{
-      alert("Missing required assistant parameters");
-    }
     }
   
     
 
     return (
       <main style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-        <div style={{  flex: 1, paddingRight: '20px' }}> 
+        <div style={{ flex: 1, paddingRight: '20px' }}>
           <h1 className={`${lusitana.className} mb-20 text-xl md:text-6xl`}>
             Dashboard
           </h1>
@@ -143,43 +163,46 @@
           </h2>
           <IA onOptionSelected={handleOptionSelected} />
           {selectAI && <p>Opción seleccionada: {selectAI}</p>}
-          <br></br>
+  
           <h2 className={`${roboto.className} mb-4 text-xl md:text-2xl`}>
             Introduce your IA token
           </h2>
           <Token onTokenSubmit={handleTokenSubmit} />
           {token && <p>Token: {token}</p>}
-          <h2 className={`${roboto.className} mb-4 text-xl md:text-2xl`}>
-            Archivos
-          </h2>
-          <Files onFilesChange={handleFilesChange}/>
-          </div>
-          <div style={{ flex: 2, }}> 
-          <br></br>
-          <br></br>
-          <br></br>
-          <br></br><br></br>
-          <h2 className={`${roboto.className} mb-4 text-xl md:text-2xl`}>
-            Name of the chatbot
-          </h2>
-          <Name onNameSubmit={handleNameSubmit}/>
-          {name && <p> name: {name}</p>}
-          <br></br>
-          <h2 className={`${roboto.className} mb-4 text-xl md:text-2xl`}>
-            Instruction of the chatbot
-          </h2>
-          <Role onRoleSubmit={handleRoleSubmit}/>
-          {role && <p> role: {role}</p>}
-          <br></br>
-          <br></br><br></br>
-          <Button onClick={handleCreate} style={{ marginTop: '20px' }}>
-            Crear
-          </Button>
-
-
+  
+          {(selectAI === "gpt-3.5-turbo" || selectAI==="gpt-4-1106-preview" ) && (
+            <>
+              <h2 className={`${roboto.className} mb-4 text-xl md:text-2xl`}>
+                Archivos
+              </h2>
+              <Files onFilesChange={handleFilesChange} />
+            </>
+          )}
         </div>
+        {apiSelected && (
+          <div style={{ flex: 2 }}>
+            <br></br><br></br><br></br><br></br><br></br>
+            <h2 className={`${roboto.className} mb-4 text-xl md:text-2xl`}>
+              Name of the chatbot
+            </h2>
+            <Name onNameSubmit={handleNameSubmit} />
+            {name && <p> name: {name}</p>}
+            <br></br>
+            <h2 className={`${roboto.className} mb-4 text-xl md:text-2xl`}>
+              Instruction of the chatbot
+            </h2>
+            <Role onRoleSubmit={handleRoleSubmit} />
+            {role && <p> role: {role}</p>}
+            <br></br>
+            <Button onClick={handleCreate} style={{ marginTop: '20px' }}>
+              Crear
+            </Button>
+          </div>
+        )}
       </main>
     );
   }
-
+  
+  
+  
   export default Page;
