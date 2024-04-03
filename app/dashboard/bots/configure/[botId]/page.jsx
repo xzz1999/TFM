@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRobot, faTimes, faPlus } from '@fortawesome/free-solid-svg-icons';
 import "./configure.css";
-import { botData, filesName,fileId, deleteFile } from '@/app/lib/actions'; // Asegúrate de implementar uploadFile en tus acciones
+import { botData, filesName,updateBot,updateBotG } from '@/app/lib/actions'; 
 import { lusitana, roboto } from '@/app/components/fonts';
 import { Button } from '@/app/components/button';
 
@@ -42,7 +42,7 @@ const BotData = () => {
           console.error("Error al obtener los nombres de los archivos:", error);
         }
       } else {
-        setFileNames([]); // Asegura que fileNames esté vacío si bot.fileId lo está
+        setFileNames([]);
       }
     };
 
@@ -54,20 +54,19 @@ const BotData = () => {
   };
 
   const handleRemoveFileName = async (index) => {
-    // Obtén el fileId del archivo a eliminar
     const fileIdToDelete = bot.fileId[index];
     console.log("deletefile:",fileIdToDelete);
   
     try {
-      // Llama a la API de eliminación de archivos
+ 
       const deleteResponse = await fetch('/api/openAI/deleteFile', {
-        method: 'DELETE', // o 'DELETE', dependiendo de tu implementación del servidor
+        method: 'DELETE', 
         headers: {
           'Content-Type': 'application/json',
-          'key': bot.token, // Asegúrate de que la autenticación se maneje según tus requisitos
+          'key': bot.token,
         },
 
-        body: JSON.stringify({ fileId: fileIdToDelete }), // Envía el fileId en el cuerpo de la solicitud
+        body: JSON.stringify({ fileId: fileIdToDelete }), 
       });
       
   
@@ -75,14 +74,14 @@ const BotData = () => {
         throw new Error('Network response was not ok during file deletion');
       }
   
-      // Si la API devuelve un error, podrías manejarlo aquí.
+      
       const deleteResult = await deleteResponse.json();
       if (deleteResult.error) {
         console.error('Error deleting file:', deleteResult.error);
-        return; // Detén la ejecución si hay un error
+        return; 
       }
   
-      // Si la eliminación es exitosa, actualiza los estados
+      
       const newFileNames = fileNames.filter((_, i) => i !== index);
       setFileNames(newFileNames);
       const newFileIds = bot.fileId.filter((_, i) => i !== index);
@@ -113,6 +112,27 @@ const BotData = () => {
   const handleRemoveNewFile = (index) => {
     setNewFiles(currentFiles => currentFiles.filter((_, i) => i !== index));
   };
+  const sendBotDataG =  async() => {
+    console.log("enviando modificaciones de gemini");
+    const data = {
+      Id: bot.id,
+      name: bot.name,
+      ai: bot.ai,
+      token: bot.token,
+      role: bot.role,
+      fileId: bot.fileId
+
+    }
+  
+    try {
+      const update = await updateBot(bot.id,data);
+      if(update){
+        alert("bot modificado exitosamente");
+      }
+    }catch(e){
+      alert("error en modificar el bot:",e);
+    }
+  }
   
   const sendBotData =  async() => {
     console.log("Enviando datos del bot:", bot);
@@ -167,7 +187,7 @@ const BotData = () => {
         const responseData = await response.json();
         if (responseData.error) {
           console.error('Error actualizar assistente:', responseData.error);
-          alert(`Error: ${responseData.error}`); // Consider using a more user-friendly way to display errors
+          alert(`Error: ${responseData.error}`); 
         } else {
           console.log('assistente actualizado con exito:')
           alert('se ha actualizado correctamente');
@@ -184,81 +204,85 @@ const BotData = () => {
 
 
   if (!bot.id) return <div>Cargando datos del bot...</div>;
+  const isChatGPT = bot.ai === 'gpt-3.5-turbo' || bot.ai === 'gpt-4-1106-preview';
 
   return (
     <main style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-  <div style={{ flex: 1, paddingRight: '20px' }}>
-    <h1 className={`${lusitana.className} mb-20 text-xl md:text-6xl`}>
-      <FontAwesomeIcon icon={faRobot} className="bot-icon" />
-      Bot Configuration
-    </h1>
-    <br />
-    <div>
-      <h2 className={`${roboto.className} mb-20 text-xl md:text-3xl`}>Datos de Bot:</h2>
-      {isEditing ? (
-        <>
-          {/* Existing fields and labels for editing */}
-          <label>ID: {bot.id}</label><br />
-          <label>Nombre:</label>
-          <input
-            type="text"
-            value={bot.name}
-            onChange={(e) => handleInputChange(e, 'name')}
-          /><br />
-          <label>Role:</label>
-          <input
-            type="text"
-            value={bot.role}
-            onChange={(e) => handleInputChange(e, 'role')}
-          /><br />
-          <div>Archivos Actuales:</div>
-          {fileNames.map((fileName, index) => (
-            <div key={index}>
-              {fileName} <FontAwesomeIcon icon={faTimes} onClick={() => handleRemoveFileName(index)} />
-            </div>
-          ))}
-        </>
-      ) : (
-        <>
-          <p>ID: {bot.id}</p>
-          <p>Nombre: {bot.name}</p>
-          <p>Role: {bot.role}</p>
-          <div>Archivos Actuales:
-            {fileNames.map((fileName, index) => (
-              <p key={index}>{fileName}</p>
-            ))}
-          </div>
-        </>
-      )}
-      {/* Nuevos Archivos Section (always visible) */}
-      <Button onClick={toggleEdit}>{isEditing ? 'Guardar' : 'Editar'}</Button>
-      <div>Archivos Nuevos:</div>
-      {newFiles.map((file, index) => (
-        <div key={index}>
-          {file.name} <FontAwesomeIcon icon={faTimes} onClick={() => handleRemoveNewFile(index)} />
+      <div style={{ flex: 1, paddingRight: '20px' }}>
+        <h1 className={`${lusitana.className} mb-20 text-xl md:text-6xl`}>
+          <FontAwesomeIcon icon={faRobot} className="bot-icon" />
+          Bot Configuration
+        </h1>
+        <br />
+        <div>
+          <h2 className={`${roboto.className} mb-20 text-xl md:text-3xl`}>Datos de Bot:</h2>
+          {isEditing ? (
+            <>
+
+              <label>ID: {bot.id}</label><br />
+              <label>Nombre:</label>
+              <input
+                type="text"
+                value={bot.name}
+                onChange={(e) => handleInputChange(e, 'name')}
+              /><br />
+              <label>Role:</label>
+              <input
+                type="text"
+                value={bot.role}
+                onChange={(e) => handleInputChange(e, 'role')}
+              /><br />
+              {isChatGPT && (
+                <div>Archivos Actuales:</div>
+              )}
+              {isChatGPT && fileNames.map((fileName, index) => (
+                <div key={index}>
+                  {fileName} <FontAwesomeIcon icon={faTimes} onClick={() => handleRemoveFileName(index)} />
+                </div>
+              ))}
+            </>
+          ) : (
+            <>
+              <p>ID: {bot.id}</p>
+              <p>Nombre: {bot.name}</p>
+              <p>Role: {bot.role}</p>
+              {isChatGPT && (
+                <div>Archivos Actuales:
+                  {fileNames.map((fileName, index) => (
+                    <p key={index}>{fileName}</p>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+          <Button onClick={toggleEdit}>{isEditing ? 'Guardar' : 'Editar'}</Button>
+          {isChatGPT && (
+            <>
+              <div>Archivos Nuevos:</div>
+              {newFiles.map((file, index) => (
+                <div key={index}>
+                  {file.name} <FontAwesomeIcon icon={faTimes} onClick={() => handleRemoveNewFile(index)} />
+                </div>
+              ))}
+              <button onClick={triggerFileInput}><FontAwesomeIcon icon={faPlus} /> Añadir archivo</button>
+            </>
+          )}
         </div>
-      ))}
-      <button onClick={triggerFileInput}><FontAwesomeIcon icon={faPlus} /> Añadir archivo</button>
-      <br></br>
+        {!isEditing  && (
+          <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '20px' }}>
+            <Button onClick={isChatGPT ? sendBotData : sendBotDataG}>Enviar</Button>
+          </div>
+        )}
+      </div>
       <input
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
-        multiple  
+        multiple
         style={{ display: 'none' }}
       />
-      
-    </div>
-    {!isEditing && (
-      <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '20px' }}>
-        <Button onClick={sendBotData}>Enviar</Button>
-      </div>
-    )}
-  </div>
-</main>
-
+    </main>
   );
-
 };
 
 export default BotData;

@@ -19,6 +19,7 @@ export type dataBot = {
   fileId: string[]
 
 }
+
 export type dataRequire = {
   assistantName: String
   assistantModel: String,
