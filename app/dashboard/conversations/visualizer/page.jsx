@@ -18,6 +18,8 @@ const  visualizerPage = () => {
     const [messages, setMessages] = useState([]);
     const endOfMessagesRef = useRef(null);
     const [botName, setBotName] = useState("");
+    const [totalQuestions, setTotalQuestions] = useState(0);
+    const [totalAnswers, setTotalAnswers] = useState(0);   
     useEffect(() => {
         const a = searchParams.get('bot');
         setBot(a);
@@ -56,6 +58,10 @@ const  visualizerPage = () => {
                     }
                 ])).flat();(adaptedMessages);
                 setMessages(adaptedMessages);
+                const questions = adaptedMessages.filter(msg => msg.sender === 'user').length;
+                const answers = adaptedMessages.filter(msg => msg.sender === 'bot').length;
+                setTotalQuestions(questions);
+                setTotalAnswers(answers);
             }
         } catch (error) {
             console.error('Error al enviar correo a la API:', error);
@@ -76,6 +82,10 @@ const  visualizerPage = () => {
 
     return (
         <div className="chat-bar">
+            <div className="message-stats">
+                <p>Total de preguntas realizadas: <span className="stat-value">{totalQuestions}</span></p>
+                <p>Total de respuestas recibidas: <span className="stat-value">{totalAnswers}</span></p>
+            </div>
             <div className="messages">
                 {messages.length > 0 ? (
                     messages.map((message, index) => (

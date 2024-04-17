@@ -47,8 +47,7 @@
     const pathT = `${tmpDir}/${file.name}`;
     const hash = crypto.createHash('sha256').update(buffer).digest('hex');
     const exist = await checkFile(hash);
-    //debug
-    console.log("exist:",exist);
+
     if(exist===null){
   
     await writeFile(pathT, buffer);
@@ -80,7 +79,6 @@
       } catch (error) {
         console.error('Error uploading file:', error);
 
-      // Attempt to delete the file in case of an error
       try {
         await unlink(pathT);
         console.log(`File ${path} deleted after error`);

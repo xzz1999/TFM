@@ -59,3 +59,5 @@ import { addBot } from '@/app/lib/actions';
         return NextResponse.json({ error: 'Method Not Allowed' });
     }
 };
+
+

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Button } from '@/app/components/button'; // Asegúrate de que la ruta de importación sea correcta
+import { Button } from '@/app/components/button'; 
 
-function Token({ onTokenSubmit }) { // Agrega onTokenSubmit como prop
+function Token({ onTokenSubmit }) { 
   const [value, setValue] = useState('');
   const [error, setError] = useState('');
 
@@ -15,7 +15,7 @@ function Token({ onTokenSubmit }) { // Agrega onTokenSubmit como prop
     if (!value.trim()) {
       setError('Por favor, introduce un valor antes de enviar.');
     } else {
-      onTokenSubmit(value); // Llama a la función de callback con el valor del token
+      onTokenSubmit(value); 
       setValue('');
     }
   };

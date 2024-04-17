@@ -12,6 +12,14 @@
     max-width: 60%;
     background-color: #f0f0f0; 
 }
+.message-stats {
+    background-color: #0d91e3;
+    padding: 20px;
+    border-bottom: 2px solid #ddd;
+}
+.stat-value {
+    font-weight: bold;
+}
 
 .left {
     align-items: flex-start; 

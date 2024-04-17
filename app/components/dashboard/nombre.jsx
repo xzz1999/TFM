@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Button } from '@/app/components/button'; // Asegúrate de que la ruta de importación sea correcta
+import { Button } from '@/app/components/button'; 
 
-function Name({ onNameSubmit }) { // Agrega onNameSubmit como prop
+function Name({ onNameSubmit }) { 
   const [value, setValue] = useState('');
   const [error, setError] = useState('');
 
@@ -15,8 +15,8 @@ function Name({ onNameSubmit }) { // Agrega onNameSubmit como prop
     if (!value.trim()) {
       setError('Por favor, introduce un valor antes de enviar.');
     } else {
-      onNameSubmit(value); // Llama a la función de callback con el valor del nombre
-      setValue(''); // Opcional: limpiar el campo después de enviar
+      onNameSubmit(value); 
+      setValue(''); 
     }
   };
 

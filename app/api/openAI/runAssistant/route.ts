@@ -46,26 +46,16 @@ export async function POST(req: NextRequest) {
     const assistantId = data.assistantId;
     const threadId = data.threadId;
     
-    // Logging the received IDs for debugging purposes. This helps in verifying that
-    // the correct IDs are being processed.
-    console.log(`Inside -runAssistant --> assistantId: ${assistantId}`);
-    console.log(`Inside -runAssistant --> threadId: ${threadId}`);
-
-    // Creating a new run (interaction) using the OpenAI API with the provided assistant and thread IDs.
-    // This step is crucial for initiating the interaction with the AI assistant.
     const run = await openai.beta.threads.runs.create(threadId, {
       assistant_id: assistantId,
     });
 
-    // Logging the details of the created run for debugging. This includes the run ID and any other relevant information.
+    
     console.log(`run: ${JSON.stringify(run)}`);
 
-    // Responding with the run ID in JSON format. This ID can be used for further operations
-    // such as retrieving the run's output or continuing the conversation.
     return NextResponse.json({ runId: run.id });
   } catch (error) {
-    // Handling and logging any errors that occur during the process. This includes errors in
-    // API requests, data extraction, or any other part of the interaction flow.
+    
     console.error(`Error in -runAssistant: ${error}`);
     return NextResponse.json({ error: 'Failed to run assistant' }, { status: 500 });
   }

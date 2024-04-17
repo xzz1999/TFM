@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/app/components/button'; 
 
-function Role({ onRoleSubmit }) { // Agrega onRoleSubmit como prop
+function Role({ onRoleSubmit }) { 
   const [value, setValue] = useState('');
   const [error, setError] = useState('');
 
@@ -15,7 +15,7 @@ function Role({ onRoleSubmit }) { // Agrega onRoleSubmit como prop
     if (!value.trim()) {
       setError('Por favor, introduce un valor antes de enviar.');
     } else {
-      onRoleSubmit(value); // Llama a la función de callback con el valor del rol
+      onRoleSubmit(value); 
       setValue('');
     }
   };
