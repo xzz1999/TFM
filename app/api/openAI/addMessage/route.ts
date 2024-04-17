@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     }
    
     if (!bot) {
-      console.log('No API key provided');
+      console.log('API KEY No proporcionado');
       return NextResponse.json({ success: false, message: 'API key is required' });
     }
     const token = bot.token;
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       });
      
      
-      console.log("add_Message successfully");
+      console.log("mensaje creado con exito");
       return NextResponse.json({ message: "Message created successfully" });
       }
    

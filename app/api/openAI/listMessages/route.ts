@@ -5,18 +5,15 @@ import OpenAI from "openai";
 import { botData } from '@/app/lib/actions';
 
 
-// Define an asynchronous POST function to handle incoming requests
 export async function POST(req: NextRequest) {
         //extraer la clave de cabecera
         const botId = req.headers.get('id');
-        //debug
-        console.log("id en listMessage:", botId);
+
         let bot;
         if(botId){
           bot = await botData(botId);
         }
-        // debug
-        console.log("bot:",bot);
+       
         if (!bot) {
           console.log('No API key provided');
           return NextResponse.json({ success: false, message: 'API key is required' });

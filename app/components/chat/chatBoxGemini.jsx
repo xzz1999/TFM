@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import './chatBox.css';
 import { useSearchParams } from 'next/navigation';
-import { getEmail, setConversation, getCoversation, botData } from '@/app/lib/actions';
+import { getEmail} from '@/app/lib/actions';
 import { BsRobot } from "react-icons/bs";
 import { PiStudent } from "react-icons/pi";
+import { setConversation } from '@/app/lib/actions';
 
 export default function ChatBarGemini() {
     const [messages, setMessages] = useState([]);
@@ -13,7 +14,6 @@ export default function ChatBarGemini() {
     const [botId, setBotId] = useState('');
     const [user, setUser] = useState('');
     const [email,setEmail] = useState('');
-    const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState(false);
 
     useEffect(() => {
@@ -30,41 +30,54 @@ export default function ChatBarGemini() {
 
     useEffect(() => {
         if(!botId || !user) return;
-
+        setMessages([{ text: "Hola, ¿en qué puedo ayudarte?", sender: "bot" }]);
         const initThread = async () => {
-            setIsLoading(true);
-            setMessages([{ text: "Hola, ¿en qué puedo ayudarte?", sender: "bot" }]);
             try {
-                const emal = await getEmail(botId, user);
-                setEmail(emal);
-                const data = {
-                    bot: botId,
-                    user: emal,
-                    Time: null,
-                };
-                
-                const firstTime = await getCoversation(data);
-                console.log("firstTime:",firstTime);
-                if (firstTime.length == 0) {
-                    const botInfo = await botData(botId);
-                    const firstConversation = {
-                        student: email,
-                        bot: botId,
-                        Time: new Date(),
-                        question: botInfo.role,
-                        answer: "Hola, ¿en qué puedo ayudarte?"
-                    };
-                     await setConversation(firstConversation);
-                }
-            } catch (e) {
-                console.error("Error en inicializar el bot:", e);
-            } finally {
-                setIsLoading(false);
+                const correo = await getEmail(botId,user);
+                setEmail(correo);
+            } catch (error) {
+                console.error("Error en encontrar email:", error);
             }
         };
 
         initThread();
     }, [botId, user]);
+    const startChat = async () => {
+        try {
+            const response = await fetch('/api/Gemini/startChat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'id': botId
+                },
+                body: JSON.stringify({action:'startChat'})
+            });
+            const data = await response.json();
+            if (data) {
+                return data.id;
+            }
+        } catch (error) {
+            console.error('Error en empezar el chat:', error);
+        }
+    };
+    const sendMessage = async (id,question) => {
+        try {
+            const response = await fetch('/api/Gemini/startChat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'id': botId
+                },
+                body: JSON.stringify({id,question,action:'sendMessage'})
+            });
+            const data = await response.json();
+            if (data) {
+                return data.response;
+            }
+        } catch (error) {
+            console.error('Error en empezar el chat:', error);
+        }
+    };
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
@@ -79,27 +92,17 @@ export default function ChatBarGemini() {
                 student: email,
                 question: newMessage
             };
-            
-            const response = await fetch('/api/Gemini', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'id': botId,
-                    'user': user
-                },
-                body: JSON.stringify({ question: newMessage })
-            });
+            const id = await startChat()
+            if(id){
+                const response  = await sendMessage(id,newMessage);
+               
+                if(response){
+                    interaccion.answer = response;
+                    setMessages(prevMessages => [...prevMessages, { text: response, sender: "bot" }]);  
 
-            const result = await response.json();
-            console.log("result:", result);
-
-            if (response.ok) {
-                interaccion.answer = result.response;
-                setMessages(prevMessages => [...prevMessages, { text: result.response, sender: "bot" }]);            
-            } else {
-                console.error('Error al añadir el mensaje:', result.error);
+                }
             }
-            // await setConversation(interaccion);
+            await setConversation(interaccion);
         } catch (error) {
             console.error('Error en la solicitud:', error);
         } finally {
@@ -111,16 +114,6 @@ export default function ChatBarGemini() {
     useEffect(() => {
         endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
-
-    if (isLoading) {
-        return (
-            <div className="loading-screen">
-                <div className="loading-animation">
-                    <p>Cargando...</p>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="chat-bar">

@@ -131,7 +131,6 @@
               } else {
                 console.log('Assistant created successfully:', responseData.assistantId);
                 alert(`Assistant created successfully. ID: ${responseData.assistantId}`);
-                // Restablecer estados aquí si es necesario
               }
             }catch(error){
               console.error("Error en crear asistente:", error);

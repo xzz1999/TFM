@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 
-// Sin la declaración de la interfaz ButtonProps, ya que JSX no soporta TypeScript
+
 export function Button({ children, className, ...rest }) {
   return (
     <button

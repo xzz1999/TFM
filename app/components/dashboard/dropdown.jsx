@@ -4,7 +4,7 @@ import { Button } from '@/app/components/button';
 const Dropdown = ({ options, onSelectionChange }) => {
   const [selectedOption, setSelectedOption] = useState(options[0]);
 
-  // Manejador para el evento de clic en el botón de enviar
+ 
   const handleSubmit = () => {
     
     onSelectionChange(selectedOption);

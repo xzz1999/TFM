@@ -15,10 +15,8 @@
     };
 
     const removeFile = (fileName) => {
-      // Filtra el archivo que se quiere eliminar y actualiza el estado
       setSelectedFiles(prevFiles => {
         const updatedFiles = prevFiles.filter(file => file.name !== fileName);
-        // Retorna los archivos actualizados al componente padre
         onFilesChange(updatedFiles);
         return updatedFiles;
       });
