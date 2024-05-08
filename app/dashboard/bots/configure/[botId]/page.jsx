@@ -1,11 +1,12 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRobot, faTimes, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faRobot, faTimes, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import "./configure.css";
-import { botData, filesName,updateBot,updateBotG } from '@/app/lib/actions'; 
+import { botData, filesName,updateBot } from '@/app/lib/actions'; 
 import { lusitana, roboto } from '@/app/components/fonts';
 import { Button } from '@/app/components/button';
+import { useRouter} from 'next/navigation'; 
 
 const BotData = () => {
   const [bot, setBot] = useState({ id: '', name: '', role: '', fileId: [], token: '', ai: "" });
@@ -13,6 +14,7 @@ const BotData = () => {
   const [isEditing, setIsEditing] = useState(false);
   const fileInputRef = useRef(null);
   const [newFiles, setNewFiles] = useState([]);
+  const router = useRouter(); 
 
   useEffect(() => {
     const fetchBotData = async () => {
@@ -201,10 +203,42 @@ const BotData = () => {
         alert(`Error: ${error.message}`); 
       }
     }
+    const deleteBot = async () => {
+      if (window.confirm('¿Estás seguro de que deseas eliminar este bot?')) {
+      try {
+        const datal ={ 
+          modelId: bot.id
+        }
+        console.log("modelId", datal);
+        const response = await fetch('/api/llama/deleteModel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(datal),
+        })
+        if (!response.ok) 
+          throw new Error(data.message);
+        const data = await response.json();
+        if (data.error) {
+          console.error('Error en eliminar assistente:', data.error);
+          alert(`Error: ${data.error}`); 
+          window.location.reload();
+        } else {
+          console.log('assistente eliminado con exito:')
+          alert('se ha eliminado correctamente');
+          router.push('/dashboard/bots')
+        }
+      } catch (error) {
+        alert(`error en eliminar el bot: ${error.message}`);
+        window.location.reload();
+      }
+    }
+    };
+  
 
 
   if (!bot.id) return <div>Cargando datos del bot...</div>;
   const isChatGPT = bot.ai === 'gpt-3.5-turbo' || bot.ai === 'gpt-4-1106-preview';
+  const isLlama3  = bot.ai === 'llama3'
 
   return (
     <main style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
@@ -255,7 +289,14 @@ const BotData = () => {
               )}
             </>
           )}
+          {isLlama3 && (
+            <button onClick={deleteBot} style={{ color: 'red' }}>
+              <FontAwesomeIcon icon={faTrash} /> Delete Bot
+            </button>
+          )}
+          {!isLlama3 && (
           <Button onClick={toggleEdit}>{isEditing ? 'Guardar' : 'Editar'}</Button>
+          )}
           {isChatGPT && (
             <>
               <div>Archivos Nuevos:</div>
@@ -268,11 +309,13 @@ const BotData = () => {
             </>
           )}
         </div>
-        {!isEditing  && (
+       
+        {!isEditing  && !isLlama3 && (
           <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '20px' }}>
             <Button onClick={isChatGPT ? sendBotData : sendBotDataG}>Enviar</Button>
           </div>
         )}
+        
       </div>
       <input
         type="file"

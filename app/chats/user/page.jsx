@@ -1,8 +1,9 @@
 "use client";
 import React from 'react';
 import ChatLogo from '@/app/components/logo.jsx';
-import ChatBar from '@/app/components/chat/chatBox';
+import ChatBarOpenAI from '@/app/components/chat/chatBoxOpenAI';
 import ChatBarGemini from '@/app/components/chat/chatBoxGemini';
+import ChatBarLlama from '@/app/components/chat/chatBoxllama'
 import {useSearchParams} from 'next/navigation'
 import { botData } from '@/app/lib/actions';
 import { useEffect, useState } from 'react';
@@ -35,6 +36,8 @@ export default function ChatPage() {
 
     }
     const isChatGPT = ai === 'gpt-3.5-turbo' || ai === 'gpt-4-1106-preview';
+    const isGemini = ai === 'Gemini 1.0 Pro'
+    const isLlama = ai === 'llama3'
 
 
     return (
@@ -42,7 +45,10 @@ export default function ChatPage() {
             <div className="flex h-20 shrink-0 items-end rounded-lg bg-blue-500 p-4 md:h-52">
                 <ChatLogo />
             </div>
-            {isChatGPT ?  <ChatBar /> :  <ChatBarGemini />}
+            {isChatGPT && <ChatBarOpenAI />}
+            {isGemini && <ChatBarGemini />}
+            {isLlama && <ChatBarLlama />}
+
         </main>
     );
 }

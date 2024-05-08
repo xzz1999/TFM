@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const password = process.argv[2]; // Obtiene la contraseña del argumento de la línea de comandos
+const password = process.argv[2]; 
 
 // Generar hash de la contraseña
 bcrypt.hash(password, 10, function(err, hash) {
