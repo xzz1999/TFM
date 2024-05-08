@@ -1,6 +1,6 @@
     "use client";
     import { useEffect, useState } from 'react';
-    import Login from '@/app/components/chat/login'; 
+    import LoginOpenAI from '@/app/components/chat/loginOpenAI'; 
     import LoginGemini from '@/app/components/chat/loginGemini'; 
     import ChatLogo from '@/app/components/logo.jsx';
     import {useSearchParams} from 'next/navigation'
@@ -40,7 +40,7 @@
                 <div className="flex h-20 shrink-0 items-end rounded-lg bg-blue-500 p-4 md:h-52">
                     <ChatLogo />
                 </div>
-                {isChatGPT ? <Login /> : <LoginGemini />}
+                {isChatGPT ? <LoginOpenAI /> : <LoginGemini />}
 
                 
             </main>

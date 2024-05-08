@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message });
     } else {
       console.error('Unknown error:', error);
-      return NextResponse.json({ error: 'An unknown error occurred' });
+      return NextResponse.json({ error: 'xvc' });
     }
   }
 }

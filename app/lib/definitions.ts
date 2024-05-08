@@ -26,6 +26,11 @@ export type dataRequire = {
   assistantDescription: String,
   assistantToken: String
 };
+export type datallama = {
+  assistantName: String
+  assistantModel: String,
+  assistantDescription: String,
+}
 
 export type  dataMessage = {
   threadId: string

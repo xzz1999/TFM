@@ -2,7 +2,7 @@
 
 import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
-import {datafichero,dataBot,dataRequire,dataConversation, dataGetConversation} from '@/app/lib/definitions'
+import {datafichero,dataBot,dataRequire,dataConversation, dataGetConversation, datallama} from '@/app/lib/definitions'
 import {MongoClient} from 'mongodb';
 const uri = "mongodb://127.0.0.1:27017";
 const client = new MongoClient(uri);
@@ -132,6 +132,23 @@ export async function addBot(fichero: any) {
   }
 }
 
+//funcion que eliminar un bot de fichero
+export async function deleteBot(id: string) {
+  try {
+ 
+    await client.connect();
+    const database = client.db("TFM");
+    const collection = database.collection("bots");
+    const query = { Id:id }
+    await collection.deleteOne(query);
+    return true;
+  } catch (error) {
+    console.error("Error al escribir bot en MongodB:", error);
+  }finally{
+    await client.close();
+  }
+}
+
 //actualizar un bot
 export async function updateBot(id:string, datos: dataBot){
   console.log("data:",datos);
@@ -156,7 +173,8 @@ export async function updateBot(id:string, datos: dataBot){
 }
 
 // verifica si los datos de bot no son nulos
-export async function isDataNull  (data:dataRequire)  {
+export async function isDataNull  (data:dataRequire| datallama)  {
+  console.log("data:", data);
   const isInvalid = Object.values(data).some(value => value === null || value === undefined || value === '');
   console.log("es válido:", isInvalid);
   if(!isInvalid) return true;
@@ -465,3 +483,4 @@ export async function getCoversation(data:dataGetConversation){
   }
 
 }
+
