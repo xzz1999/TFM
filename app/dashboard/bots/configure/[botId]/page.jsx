@@ -3,13 +3,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRobot, faTimes, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import "./configure.css";
-import { botData, filesName,updateBot } from '@/app/lib/actions'; 
+import { botData, filesName,updateBot, deleteBot } from '@/app/lib/actions'; 
 import { lusitana, roboto } from '@/app/components/fonts';
 import { Button } from '@/app/components/button';
 import { useRouter} from 'next/navigation'; 
 
 const BotData = () => {
   const [bot, setBot] = useState({ id: '', name: '', role: '', fileId: [], token: '', ai: "" });
+  const [botAi, setBotAi] = useState("");
   const [fileNames, setFileNames] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const fileInputRef = useRef(null);
@@ -25,6 +26,7 @@ const BotData = () => {
         const data = await botData(id);
         if (!data.error) {
           setBot({ id: data.Id, name: data.name, role: data.role, fileId: data.fileId || [], token: data.token, ai: data.ai });
+          setBotAi(data.ai);
         } else {
           console.error(data.error);
         }
@@ -116,29 +118,14 @@ const BotData = () => {
   };
   const sendBotDataG =  async() => {
     console.log("enviando modificaciones de gemini");
-    const data = {
-      Id: bot.id,
-      name: bot.name,
-      ai: bot.ai,
-      token: bot.token,
-      role: bot.role,
-      fileId: bot.fileId
-
-    }
-  
-    try {
-      const update = await updateBot(bot.id,data);
-      if(update){
-        alert("bot modificado exitosamente");
-      }
-    }catch(e){
-      alert("error en modificar el bot:",e);
-    }
+    
   }
   
   const sendBotData =  async() => {
     console.log("Enviando datos del bot:", bot);
-    
+    switch(botAi){
+      case "gpt-3.5-turbo":
+      case "gpt-4-1106-preview":  
       const dataToSend = {
         Id : bot.id,
         assistantName: bot.name,
@@ -173,10 +160,10 @@ const BotData = () => {
     }
     
     
-      try {
-        const response = await fetch('/api/openAI/updateAssistant', {
-          method: 'POST',
-          headers: {
+    try {
+      const response = await fetch('/api/openAI/updateAssistant', {
+        method: 'POST',
+        headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(dataToSend),
@@ -202,35 +189,98 @@ const BotData = () => {
         console.error('Error en actualizar :', error);
         alert(`Error: ${error.message}`); 
       }
+  break;
+  case"Gemini 1.0 Pro":
+    const data = {
+    Id: bot.id,
+    name: bot.name,
+    ai: bot.ai,
+    token: bot.token,
+    role: bot.role,
+    fileId: bot.fileId
+
     }
-    const deleteBot = async () => {
-      if (window.confirm('¿Estás seguro de que deseas eliminar este bot?')) {
-      try {
-        const datal ={ 
-          modelId: bot.id
-        }
-        console.log("modelId", datal);
-        const response = await fetch('/api/llama/deleteModel', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(datal),
-        })
-        if (!response.ok) 
-          throw new Error(data.message);
-        const data = await response.json();
-        if (data.error) {
-          console.error('Error en eliminar assistente:', data.error);
-          alert(`Error: ${data.error}`); 
-          window.location.reload();
-        } else {
-          console.log('assistente eliminado con exito:')
-          alert('se ha eliminado correctamente');
-          router.push('/dashboard/bots')
-        }
-      } catch (error) {
-        alert(`error en eliminar el bot: ${error.message}`);
-        window.location.reload();
+    try {
+      const update = await updateBot(bot.id,data);
+      if(update){
+      alert("bot modificado exitosamente");
+      window.location.reload();
       }
+    }catch(e){
+    alert("error en modificar el bot:",e);
+    }
+    break;
+  case "Mistral-7B":
+    try{
+      const data = {
+        Id: bot.id,
+        name: bot.name,
+        ai: bot.ai,
+        role: bot.role,
+        fileId: bot.fileId
+      }
+      const update = await updateBot(bot.id,data)
+      if(update){
+        alert("bot modificado exitosamente");
+        window.location.reload();
+        }
+      }catch(e){
+      alert("error en modificar el bot:",e);
+      }
+      break;
+    default:
+        alert("Modelo de IA no soportado o desconocido.");
+      break;
+    }
+  }
+
+    const handleDeleteBot = async () => {
+      console.log("bot ai:", botAi);
+      if (window.confirm('¿Estás seguro de que deseas eliminar este bot?')) {
+        switch(botAi){
+          case "llama3":
+            try {
+              const datal ={ 
+                modelId: bot.id
+              }
+              console.log("modelId", datal);
+              const response = await fetch('/api/llama/deleteModel', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datal),
+              })
+              if (!response.ok) 
+                throw new Error(data.message);
+              const data = await response.json();
+              if (data.error) {
+                console.error('Error en eliminar assistente:', data.error);
+                alert(`Error: ${data.error}`); 
+                window.location.reload();
+              } else {
+                console.log('assistente eliminado con exito:')
+                alert('se ha eliminado correctamente');
+                router.push('/dashboard/bots')
+              }
+            } catch (error) {
+              alert(`error en eliminar el bot: ${error.message}`);
+              window.location.reload();
+            }
+            break;
+          case "gemini-1.0-pro":
+          case "Mistral-7B":
+            try{
+              await deleteBot(bot.id);
+              alert('se ha eliminado correctamente');
+              router.push('/dashboard/bots');
+              
+            }catch(e){
+              console.log("error en borrar el bot:",e );
+            }
+            break;
+            default:
+              alert("Modelo de IA no soportado o desconocido.");
+            break;
+          } 
     }
     };
   
@@ -289,8 +339,8 @@ const BotData = () => {
               )}
             </>
           )}
-          {isLlama3 && (
-            <button onClick={deleteBot} style={{ color: 'red' }}>
+          {!isChatGPT && (
+            <button onClick={handleDeleteBot} style={{ color: 'red' }}>
               <FontAwesomeIcon icon={faTrash} /> Delete Bot
             </button>
           )}
@@ -312,7 +362,7 @@ const BotData = () => {
        
         {!isEditing  && !isLlama3 && (
           <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '20px' }}>
-            <Button onClick={isChatGPT ? sendBotData : sendBotDataG}>Enviar</Button>
+            <Button onClick={ sendBotData }>Enviar</Button>
           </div>
         )}
         

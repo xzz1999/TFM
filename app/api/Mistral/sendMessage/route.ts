@@ -1,0 +1,52 @@
+"use server";
+import { NextRequest, NextResponse } from 'next/server';
+import fetch from 'node-fetch';
+import { botData } from '@/app/lib/actions';
+
+
+export async function POST(req: NextRequest) {
+  if (req.method !== 'POST') {
+    return new NextResponse('Method Not Allowed', { status: 405 });
+  }
+
+  try {
+    const { botId, message } = await req.json();
+    const bot = await botData(botId)
+    const role = bot?.role
+    const response = await fetch('http://138.4.22.130:9090/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        "Authorization": "aaaaaaaaaaaa",
+      },
+      body: JSON.stringify({
+        model: "mistral7b",
+        messages: [{ "role": "assistant", "content": role }, 
+        {"role": "user", "content": message}],
+      })
+    });
+    const data = await response.json();
+    if (data.choices && data.choices.length > 0) {
+      const respuesta = data.choices[0].message;
+      console.log("respuesta:",respuesta)
+      const assistantIndex = respuesta.content.indexOf("assistant");
+      if (assistantIndex !== -1) {
+      const mensajeParcial = respuesta.content.slice(0, assistantIndex);
+      console.log(mensajeParcial);
+      return new NextResponse(JSON.stringify({
+        success: 'true',
+        data: mensajeParcial
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+  } else {
+      console.log("No se encontró ningún mensaje en las opciones devueltas.");
+    }
+    
+  } catch (e) {
+    console.error("Error in processing the request:", e);
+    return new NextResponse(JSON.stringify({
+      success: 'false',
+      message: "error en generar la respuesta de chatbot"
+    }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+  }
+}
