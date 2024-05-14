@@ -4,7 +4,7 @@ import { lusitana,roboto} from '@/app/components/fonts';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState,useRef } from 'react';
 import {getCoversation} from '@/app/lib/actions';
-import './Visualizer.css';
+import './visualizer.css';
 import {botData} from '@/app/lib/actions';
 import { BsRobot  } from "react-icons/bs";
 import { PiStudent } from "react-icons/pi";
