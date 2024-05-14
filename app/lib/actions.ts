@@ -139,8 +139,14 @@ export async function deleteBot(id: string) {
     await client.connect();
     const database = client.db("TFM");
     const collection = database.collection("bots");
+    const botUse = database.collection("botUsers");
+    const Conversation = database.collection("Conversations");
     const query = { Id:id }
+    const query2 = {bot:id}
     await collection.deleteOne(query);
+    await botUse.deleteMany(query);
+    await Conversation.deleteMany(query);
+
     return true;
   } catch (error) {
     console.error("Error al escribir bot en MongodB:", error);
@@ -231,7 +237,7 @@ export async function botData (botId: string | null){
   
 }
 // funcion que chekear si un correoelectronico es asociado a un bot y si no existe añade 
-  export async function addUsers(id: string, correo: string) {
+  export async function addUsers(id: string, correo: any) {
       console.log("chequeando si existe usuario");
     try {
       await client.connect();
@@ -244,6 +250,7 @@ export async function botData (botId: string | null){
         const bot = await collection.findOne({ "id": id });
         if (bot) {
           await collection.updateOne({ "id": id }, { $push: { "correo": correo } });
+
           await client.close();
         } else {
           await collection.insertOne({ "id": id, "correo": [correo], "hilos": [] });
@@ -259,7 +266,7 @@ export async function botData (botId: string | null){
   
       
       // function que añade el thread a usuario
-  export async function addThread (thread: string, id:string){
+  export async function addThread (thread: any, id:string){
    
     try {
       await client.connect();

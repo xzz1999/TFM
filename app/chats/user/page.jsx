@@ -3,7 +3,8 @@ import React from 'react';
 import ChatLogo from '@/app/components/logo.jsx';
 import ChatBarOpenAI from '@/app/components/chat/chatBoxOpenAI';
 import ChatBarGemini from '@/app/components/chat/chatBoxGemini';
-import ChatBarLlama from '@/app/components/chat/chatBoxllama'
+import ChatBarLlama from '@/app/components/chat/chatBoxllama';
+import ChatBarMistral from'@/app/components/chat/chatboxMistral';
 import {useSearchParams} from 'next/navigation'
 import { botData } from '@/app/lib/actions';
 import { useEffect, useState } from 'react';
@@ -38,6 +39,7 @@ export default function ChatPage() {
     const isChatGPT = ai === 'gpt-3.5-turbo' || ai === 'gpt-4-1106-preview';
     const isGemini = ai === 'Gemini 1.0 Pro'
     const isLlama = ai === 'llama3'
+    const isMistral = ai === 'Mistral-7B'
 
 
     return (
@@ -48,6 +50,7 @@ export default function ChatPage() {
             {isChatGPT && <ChatBarOpenAI />}
             {isGemini && <ChatBarGemini />}
             {isLlama && <ChatBarLlama />}
+            {isMistral && <ChatBarMistral/>}
 
         </main>
     );

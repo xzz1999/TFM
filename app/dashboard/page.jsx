@@ -51,6 +51,7 @@ const Page = () => {
   const handleCreate = async () => {
     switch(selectAI){
       case "llama3":
+      case "Mistral-7B":
       const dataToSendllama = {
       assistantName: name,
       assistantModel: selectAI,
@@ -58,7 +59,7 @@ const Page = () => {
     };
     const verifierllama = await isDataNull(dataToSendllama);
     if (!verifierllama) {
-      alert("Missing required assistant parameters");
+      alert("algun parámetro de bot esta vacia");
       return;
     }
     break;
@@ -74,7 +75,7 @@ const Page = () => {
       const verifier = await isDataNull(dataToSend);
       console.log("verifier:",verifier);
       if (!verifier) {
-        alert("Missing required assistant parameters");
+        alert("algun parámetro de bot esta vacia");
         return;
       }
   }
@@ -192,7 +193,25 @@ const Page = () => {
           alert(`Error: ${error.message}`);
         }
         break;
-
+      case "Mistral-7B":
+        try{
+          const id = generateId();
+          const data = {
+            Id: id,
+            name: name,
+            ai: selectAI,
+            role: role,
+            fileId: files
+          };
+           const add = await addBot(data);
+          if (add) {
+            alert("Asistente creado exitosamente.");
+            window.location.reload();
+          }
+        }catch(e){
+          console.log("Error en añadir el bot mistral:", e)
+        }
+        break;
       default:
         alert("Modelo de IA no soportado o desconocido.");
         break;
@@ -211,7 +230,7 @@ const Page = () => {
         </h2>
         <IA onOptionSelected={handleOptionSelected} />
         {selectAI && <p>Opción seleccionada: {selectAI}</p>}
-        {(selectAI != "llama3") && (
+        {(selectAI != "llama3" && selectAI != "Mistral-7B") && (
         <>
         <h2 className={`${roboto.className} mb-4 text-xl md:text-2xl`}>
           Introduce your IA token
