@@ -8,8 +8,10 @@ import './visualizer.css';
 import {botData} from '@/app/lib/actions';
 import { BsRobot  } from "react-icons/bs";
 import { PiStudent } from "react-icons/pi";
+import { Suspense } from 'react';
 
-const  visualizerPage = () => {
+
+const VisualizerComponent = () => {
 
     const searchParams = useSearchParams();
     const [bot, setBot] = useState("");
@@ -116,4 +118,13 @@ const  visualizerPage = () => {
         </div>
     );
 };
+
+const visualizerPage = () => {
+    return (
+      <Suspense fallback={<div>Loading...</div>}>
+        <VisualizerComponent/>
+      </Suspense>
+    );
+  };
+  
 export default visualizerPage;

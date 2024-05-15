@@ -20,7 +20,7 @@ import { addBot } from '@/app/lib/actions';
                 name: assistantName,
                 instructions: assistantDescription,
                 model: assistantModel,
-                tools: [{ "type": "retrieval" }],
+                tools: [{ "type": "code_interpreter" }],
                 file_ids: files
             };
         

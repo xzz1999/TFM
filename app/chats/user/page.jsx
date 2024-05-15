@@ -8,9 +8,10 @@ import ChatBarMistral from'@/app/components/chat/chatboxMistral';
 import {useSearchParams} from 'next/navigation'
 import { botData } from '@/app/lib/actions';
 import { useEffect, useState } from 'react';
+import { Suspense } from 'react';
 
 
-export default function ChatPage() {
+function ChatComponent() {
     const searchParams = useSearchParams();
     const [botId,setBotId] = useState("");
     const [ai, setAi] = useState("");
@@ -55,3 +56,10 @@ export default function ChatPage() {
         </main>
     );
 }
+export default function ChatPage() {
+    return (
+      <Suspense fallback={<div>Loading...</div>}>
+        <ChatComponent />
+      </Suspense>
+    );
+  }
