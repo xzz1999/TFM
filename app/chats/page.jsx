@@ -5,9 +5,8 @@
     import ChatLogo from '@/app/components/logo.jsx';
     import {useSearchParams} from 'next/navigation'
     import { botData } from '../lib/actions';
-    
-    
-    export default function Home() {
+    import { Suspense } from 'react';
+    function ChatHomeComponent() {
         const searchParams = useSearchParams();
         const [botId,setBotId] = useState("");
         const [ai, setAi] = useState("");
@@ -46,3 +45,11 @@
             </main>
         );
     }
+
+    export default function ChatHomePage() {
+        return (
+          <Suspense fallback={<div>Loading...</div>}>
+            <ChatHomeComponent />
+          </Suspense>
+        );
+      }

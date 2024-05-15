@@ -144,7 +144,13 @@ const Page = () => {
       case "gpt-3.5-turbo":
       case "gpt-4-1106-preview":
         try {
-          const files_ids = [];
+
+          const dataToSend = {
+            assistantName: name,
+            assistantModel: selectAI,
+            assistantToken:token,
+            assistantDescription: role
+          };
           for (const file of files) {
             const formData = new FormData();
             formData.append('file', file);
@@ -161,14 +167,16 @@ const Page = () => {
             }
 
             const uploadResult = await uploadResponse.json();
+            const files_ids = [];
             if (uploadResult.error) {
               console.error('Error uploading file:', uploadResult.error);
               continue;
             }
 
             files_ids.push(uploadResult.fileId);
+            dataToSend.files = files_ids;
           }
-          dataToSend.files = files_ids;
+    
 
           const response = await fetch('/api/openAI/createAssistant', {
             method: 'POST',
