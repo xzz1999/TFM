@@ -72,8 +72,12 @@ export default function ChatBarGemini() {
             });
             const data = await response.json();
             if (data) {
-                return data.response;
-            }
+                const res ={
+                    data:data.response,
+                    time: data.time
+                     }
+                return res;
+        }
         } catch (error) {
             console.error('Error en empezar el chat:', error);
         }
@@ -90,15 +94,16 @@ export default function ChatBarGemini() {
                 bot: botId,
                 Time: new Date(),
                 student: email,
-                question: newMessage
+                question: newMessage,
             };
             const id = await startChat()
             if(id){
                 const response  = await sendMessage(id,newMessage);
                
                 if(response){
-                    interaccion.answer = response;
-                    setMessages(prevMessages => [...prevMessages, { text: response, sender: "bot" }]);  
+                    interaccion.answer = response.data;
+                    interaccion.responseTime = response.time;
+                    setMessages(prevMessages => [...prevMessages, { text: response.data, sender: "bot" }]);  
 
                 }
             }

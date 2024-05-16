@@ -13,6 +13,7 @@ export async function POST(req: NextRequest) {
     const { botId, message } = await req.json();
     const bot = await botData(botId)
     const role = bot?.role
+    const startTime = Date.now()
     const response = await fetch('http://138.4.22.130:9090/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -26,6 +27,8 @@ export async function POST(req: NextRequest) {
       })
     });
     const data = await response.json();
+    const endTime = Date.now();
+    const responseTime = endTime - startTime;
     if (data.choices && data.choices.length > 0) {
       const respuesta = data.choices[0].message;
       console.log("respuesta:",respuesta)
@@ -35,7 +38,8 @@ export async function POST(req: NextRequest) {
       console.log(mensajeParcial);
       return new NextResponse(JSON.stringify({
         success: 'true',
-        data: mensajeParcial
+        data: mensajeParcial,
+        time: responseTime
       }), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }
   } else {

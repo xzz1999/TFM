@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const { modelId, message } = await req.json();
-
+    const startTime = Date.now();
     const response = await fetch('http://127.0.0.1:11434/api/chat', {
       method: 'POST',
       headers: {
@@ -24,12 +24,13 @@ export async function POST(req: NextRequest) {
       })
     });
     const data = await response.json();
+    const endTime = Date.now();
+    const responseTime = endTime - startTime;
 
-    console.log("data:", data.message.content );
-    
     return new NextResponse(JSON.stringify({
       success: 'true',
-      data: data.message.content
+      data: data.message.content,
+      time: responseTime
     }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 
   } catch (e) {
