@@ -63,7 +63,11 @@ export default function ChatBarLlama() {
             console.log("result:", result.sucess);
             if (result.data) {
                 console.log("result.response:", result.data)
-                return result.data;
+                const res = {
+                    data: result.data,
+                    time:result.time
+                }
+                return res
             }
         } catch (error) {
             console.error('Error en empezar el chat:', error);
@@ -88,8 +92,9 @@ export default function ChatBarLlama() {
             console.log("response:",response);
                
                 if(response){
-                    interaccion.answer = response;
-                    setMessages(prevMessages => [...prevMessages, { text: response, sender: "bot" }]);  
+                    interaccion.answer = response.data;
+                    interaccion.responseTime = response.time
+                    setMessages(prevMessages => [...prevMessages, { text: response.data, sender: "bot" }]);  
 
                 }
             

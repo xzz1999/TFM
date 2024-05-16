@@ -59,7 +59,11 @@ export default function ChatBarMistral() {
             const data = await response.json();
             if (data) {
                 console.log("Data",data.data)
-                return data.data;
+                const res = {
+                    data: data.data,
+                    time: data.time
+                }
+                return res
             }
         } catch (error) {
             console.error('Error en empezar el chat:', error);
@@ -84,13 +88,13 @@ export default function ChatBarMistral() {
                 const response  = await sendMessage(botId,newMessage);
                
                 if(response){
-                    interaccion.answer = response;
-                    setMessages(prevMessages => [...prevMessages, { text: response, sender: "bot" }]);  
-
+                    interaccion.answer = response.data;
+                    interaccion.responseTime = response.time;
+                    setMessages(prevMessages => [...prevMessages, { text: response.data, sender: "bot" }]);  
+                    await setConversation(interaccion);
                 }
             
             
-           //await setConversation(interaccion);
         } catch (error) {
             console.error('Error en la solicitud:', error);
         } finally {

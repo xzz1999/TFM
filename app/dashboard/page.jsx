@@ -85,7 +85,7 @@ const Page = () => {
         const gid = generateId();
         try {
           const data = {
-            id: gid,
+            Id: gid,
             name: name,
             ai: selectAI,
             token: token,

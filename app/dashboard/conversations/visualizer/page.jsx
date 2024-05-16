@@ -9,6 +9,7 @@ import {botData} from '@/app/lib/actions';
 import { BsRobot  } from "react-icons/bs";
 import { PiStudent } from "react-icons/pi";
 import { Suspense } from 'react';
+import { Button } from '@/app/components/button';
 
 
 const VisualizerComponent = () => {
@@ -22,6 +23,9 @@ const VisualizerComponent = () => {
     const [botName, setBotName] = useState("");
     const [totalQuestions, setTotalQuestions] = useState(0);
     const [totalAnswers, setTotalAnswers] = useState(0);   
+    const [totalResponseTime, setTotalResponseTime] = useState(0);
+    const [averageResponseTime, setAverageResponseTime] = useState(0);
+    const [interactedStudents, setInteractedStudents] = useState(new Set());
     useEffect(() => {
         const a = searchParams.get('bot');
         setBot(a);
@@ -51,12 +55,13 @@ const VisualizerComponent = () => {
                         text: mensaje.question, 
                         sender: 'user',
                         student: mensaje.student,
-                        date: mensaje.Time 
+                        date: mensaje.Time,
                     },
                     {
                         text: mensaje.answer, 
                         sender: 'bot',
-                        date: mensaje.Time
+                        date: mensaje.Time,
+                        responseTime: mensaje.responseTime
                     }
                 ])).flat();(adaptedMessages);
                 setMessages(adaptedMessages);
@@ -64,6 +69,13 @@ const VisualizerComponent = () => {
                 const answers = adaptedMessages.filter(msg => msg.sender === 'bot').length;
                 setTotalQuestions(questions);
                 setTotalAnswers(answers);
+                const responseTimes = adaptedMessages.filter(msg => msg.sender === 'bot').map(msg => msg.responseTime);
+                const totalResponseTime = responseTimes.reduce((acc, curr) => acc + curr, 0);
+                setTotalResponseTime(totalResponseTime);
+                const averageResponseTime = totalResponseTime / responseTimes.length;
+                setAverageResponseTime(averageResponseTime);
+                const students = new Set(adaptedMessages.map(msg => msg.student));
+                setInteractedStudents(students);    
             }
         } catch (error) {
             console.error('Error al enviar correo a la API:', error);
@@ -80,6 +92,10 @@ const VisualizerComponent = () => {
             console.log("Error en busquedad de nombre de bot:",e);
         }
     }
+    const handleSummaryButtonClick = () => {
+
+        console.log('Botón Resumen clickeado');
+    }
 
 
     return (
@@ -87,6 +103,9 @@ const VisualizerComponent = () => {
             <div className="message-stats">
                 <p>Total de preguntas realizadas: <span className="stat-value">{totalQuestions}</span></p>
                 <p>Total de respuestas recibidas: <span className="stat-value">{totalAnswers}</span></p>
+                <p>Tiempo medio de respuesta: <span className="stat-value">{(averageResponseTime / 1000).toFixed(2)} s</span></p>
+                <p>Número de alumnos interactuados: <span className="stat-value">{interactedStudents.size - 1}</span></p>
+                <Button onClick={handleSummaryButtonClick}style={{ marginLeft: '100px', background:"green", color:"black" }}>Resumen</Button>
             </div>
             <div className="messages">
                 {messages.length > 0 ? (

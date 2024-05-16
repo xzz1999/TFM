@@ -23,7 +23,7 @@ let chatSessions: { [sessionId: string]: any } = {};
     const token = bot.token;
     const ai = bot.ai;
     const genAI = new GoogleGenerativeAI(token);
-    const model = genAI.getGenerativeModel({ model: ai});
+    const model = genAI.getGenerativeModel({ model: "gemini-pro"});
         try {
           const chat = model.startChat({
             history: [
@@ -51,12 +51,18 @@ let chatSessions: { [sessionId: string]: any } = {};
         try{
         const sessionId = data.id;
         const question = data.question;
+        console.log("chat");
         const chat = chatSessions[sessionId];
+        const startTime = Date.now()
+        console.log("result");
         const result = await chat.sendMessage(question);
         const response = await result.response;
+        const endTime = Date.now();
+        const responseTime = endTime - startTime;
         const text = response.text();
             return NextResponse.json({ 
-                response: text
+                response: text,
+                time: responseTime
             });
 
       }catch(e){

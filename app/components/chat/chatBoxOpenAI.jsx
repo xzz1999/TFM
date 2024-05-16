@@ -176,8 +176,8 @@
                 setNewMessage('');
                 setIsProcessing(true);
                 
-                try{
-                
+                try{    
+                        const startTime = Date.now()
                         const mensaje ={
                             'threadId' : threadId,
                             'input': newMessage,
@@ -198,8 +198,11 @@
                                     }
         
                                     const mensajes = await fetchMessages(conversation);
+                                    const endTime = Date.now()
+                                    const responseTime = endTime - startTime;
                                     if(mensajes){
                                         interaccion.answer = mensajes;
+                                        interaccion.responseTime = responseTime;
                                         setIsProcessing(false);
                                         setMessages(prevMessages => [...prevMessages, { text: mensajes, sender: "bot" }]); 
                                         try{

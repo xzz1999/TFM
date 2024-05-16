@@ -38,7 +38,7 @@ function ChatComponent() {
 
     }
     const isChatGPT = ai === 'gpt-3.5-turbo' || ai === 'gpt-4-1106-preview';
-    const isGemini = ai === 'Gemini 1.0 Pro'
+    const isGemini = ai === 'gemini-1.0-pro'
     const isLlama = ai === 'llama3'
     const isMistral = ai === 'Mistral-7B'
 

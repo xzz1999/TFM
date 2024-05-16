@@ -471,15 +471,16 @@ export async function getCoversation(data:dataGetConversation){
     }else if (!data.Time && data.user == "Todo"){
       query = { bot: data.bot };
     }
-    const projection = { bot: 1, Time: 1, student: 1, question: 1, answer: 1 };
+    const projection = { bot: 1, Time: 1, student: 1, question: 1, answer: 1, responseTime:1 };
     const cursor = collection.find(query).project(projection);
     let conversations = await cursor.toArray();
-    conversations = conversations.map(({ bot, Time, student, question, answer}) => ({
+    conversations = conversations.map(({ bot, Time, student, question, answer, responseTime}) => ({
       bot,
       Time,
       student,
       question,
-      answer
+      answer,
+      responseTime
     }));
     return conversations;
   }catch(e){
