@@ -64,3 +64,41 @@
 .pi-student, .bs-robot {
     font-size: 1.2em; 
 }
+.summary-modal-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo difuminado */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .summary-modal {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 80%;
+  }
+  
+  .close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    cursor: pointer;
+    font-size: 40px;
+  }
+  
+  .summary-title {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+  
+  .summary-content {
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  
