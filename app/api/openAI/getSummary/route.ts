@@ -1,11 +1,15 @@
 "use server";
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
-//import dotenv from 'dotenv';
+import dotenv from 'dotenv';
 
-//dotenv.config();
+dotenv.config();
 
-const openai = new OpenAI();
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+});
+
+
 
 
 export async function POST(req: NextRequest) {
