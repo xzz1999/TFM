@@ -6,7 +6,7 @@ import bcrypt from 'bcrypt';
 import { getPassword } from './app/lib/actions';
 
 
-// buscar el usuario por su correo electronico
+
 
  
 export const { auth, signIn, signOut } = NextAuth({
@@ -44,4 +44,5 @@ export const { auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
+  trustHost: true,
 });
