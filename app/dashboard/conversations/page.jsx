@@ -17,20 +17,17 @@ const  conversationsPage = () => {
   const handleOptionSelected = (selectedOption) => {
     if (selectedOption && selectedOption.value) {
       setBot(selectedOption.value);
-      console.log("selected bot option:", selectedOption);
     }
   };
   
   const handleOptionSelectedUser = (selectedOption) => {
     if (selectedOption && selectedOption.value) {
       setUser(selectedOption.label);
-      console.log("selected user option:", selectedOption);
     }
     
   };
   const handleDateSelected = (selectedDate) => {
     setDate(selectedDate);
-    console.log("selectedDate:",selectedDate);
   };
   const handleSubmit = () => {
     if (!bot  ) {

@@ -15,7 +15,6 @@ import { addBot } from '@/app/lib/actions';
             const openai = new OpenAI({
                 apiKey: assistantToken,
               });
-              console.log("file:", files);
             const assistantOptions: any = {
                 name: assistantName,
                 instructions: assistantDescription,

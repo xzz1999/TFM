@@ -15,7 +15,6 @@ export default function LoginGemini() {
     useEffect(() => {
         const Id = searchParams.get('botId')
         setBotId(Id)
-        console.log(botId);
     },  []);
 
     const handleSubmit = async (e) => {
@@ -24,7 +23,6 @@ export default function LoginGemini() {
         setCorreo(correo); 
         //setUser(id,correo);
         const usuario = await addUsers(botId, correo);
-        console.log("usuario:", usuario);
         
         const id = await getIndex(correo,botId);
         

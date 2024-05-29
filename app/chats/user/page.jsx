@@ -18,7 +18,6 @@ function ChatComponent() {
     useEffect(() => {
         const Id = searchParams.get('botId')
         setBotId(Id)
-        console.log(botId);
     },  []);
     useEffect(() => {
         api(botId);
@@ -29,7 +28,6 @@ function ChatComponent() {
             const bot = await botData(botId);
             if(bot){
                 setAi(bot.ai);
-                console.log(bot.ai);
             }
     
         }catch(e){

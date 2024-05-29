@@ -73,7 +73,6 @@ const Page = () => {
         assistantToken: token
       };
       const verifier = await isDataNull(dataToSend);
-      console.log("verifier:",verifier);
       if (!verifier) {
         alert("algun parámetro de bot esta vacia");
         return;
@@ -125,7 +124,6 @@ const Page = () => {
             }
           
           const result = response.json;
-          console.log("result:",result)
           if (response.error) {
             alert(`Error: ${response.error}`);
           }else{

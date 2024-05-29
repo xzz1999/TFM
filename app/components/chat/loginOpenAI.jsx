@@ -15,7 +15,6 @@ export default function Login() {
     useEffect(() => {
         const Id = searchParams.get('botId')
         setBotId(Id)
-        console.log(botId);
     },  []);
 
     const handleSubmit = async (e) => {
@@ -24,10 +23,8 @@ export default function Login() {
         setCorreo(correo); 
         //setUser(id,correo);
         const usuario = await addUsers(botId, correo);
-        console.log("usuario:", usuario);
         if(usuario){
         const hilo = await submitToApi(correo); 
-        console.log("hilo:",hilo.threadId);
         await addThread (hilo.threadId, botId);
         }
         

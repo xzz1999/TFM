@@ -90,7 +90,6 @@ const VisualizerComponent = () => {
   const handleSummaryButtonClick = () => {
     setShowStudent(true);
     setSelectedStudent(interactedStudents.values().next().value);
-    console.log("selectedStudent:", interactedStudents.values().next().value);
   };
 
   const getSummary = async (message) => {
@@ -123,7 +122,6 @@ const VisualizerComponent = () => {
       } else {
         data = { bot, user, Time: date };
       }
-      console.log("data:", data);
       const iteraciones = await getCoversation(data);
       let question
       if(iteraciones){

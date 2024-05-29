@@ -23,14 +23,10 @@ export async function POST(req: NextRequest) {
     // These IDs are essential for specifying which assistant and conversation thread
     // to interact with.
     const botId = req.headers.get('id');
-    //debug
-    console.log("id:", botId);
     let bot;
     if(botId){
       bot = await botData(botId);
     }
-    // debug
-    console.log("bot:",bot);
     if (!bot) {
       console.log('No API key provided');
       return NextResponse.json({ success: false, message: 'API key is required' });

@@ -7,13 +7,11 @@ let chatSessions: { [sessionId: string]: any } = {};
 export async function POST(req: NextRequest) {
     const botId = req.headers.get('id');
     if (!botId) {
-        console.log('BotId not provided');
         return NextResponse.json({ success: false, message: "bot id no proporcionado" });
     }
 
     const bot = await botData(botId);
     if (!bot) {
-        console.log('Bot not found');
         return NextResponse.json({ success: false, message: 'Bot no encontrado' });
     }
 
@@ -81,7 +79,6 @@ async function sendMessage(data: any) {
     }
 
     try {
-        console.log("Question:", question);
         const startTime = Date.now();
         const result = await chat.sendMessage("hola")
         const response = await result.response;

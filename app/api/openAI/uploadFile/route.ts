@@ -9,7 +9,7 @@
 
 
   export async function POST(request: NextRequest) {
-    console.log(`Upload API call started`);
+
 
     //extraer la clave de cabecera
     const apiKey = request.headers.get('key');
@@ -17,9 +17,7 @@
       console.log('No API key provided');
       return NextResponse.json({ success: false, message: 'API key is required' });
     }
-    //deb
-    console.log("inicializando OpenAI")
-    // Inicializar OpenAI
+
     const openai = new OpenAI({
       apiKey: apiKey
     });
@@ -27,8 +25,7 @@
     const data = await request.formData();
   
     const file: File | null = data.get('file') as unknown as File;
-    //debug
-    console.log("file en uploadFile:", file);
+ 
 
     if (!file) {
       console.log('No file found in the request');
@@ -39,7 +36,6 @@
     const tmpDir = '/tmp';
     if (!existsSync(tmpDir)) {
       await mkdir(tmpDir);
-      console.log(`Temporary directory ${tmpDir} created`);
     }
 
     const bytes = await file.arrayBuffer();
@@ -51,15 +47,15 @@
     if(exist===null){
   
     await writeFile(pathT, buffer);
-    console.log(`File written to ${pathT}`);
+
 
     try {
-      console.log('Starting file upload to OpenAI');
+
       const fileForRetrieval = await openai.files.create({
         file: createReadStream(pathT),
         purpose: "assistants",
       });
-      console.log(`File uploaded, ID: ${fileForRetrieval.id}`);
+  
 
         const newData  ={
           ficherohash: hash,
@@ -73,7 +69,7 @@
         }
         // eliminar fichero en el directorio tmp despues de ser subido
         await unlink(pathT);
-        console.log(`File ${pathT} deleted after upload`);
+   
 
         return NextResponse.json({ success: true, fileId: fileForRetrieval.id });
       } catch (error) {

@@ -12,18 +12,13 @@ export async function POST(req : NextRequest) {
   }
 
   try {
-    const { modelId } = await req.json();
-    console.log("modelId:", modelId);
-    
-    console.log("eliminando el modelo")
+    const { modelId } = await req.json(); 
     const command = `ollama rm ${modelId}`;
-    console.log("ejecutando el comando");
     await execPromise(command);
-    console.log("borrando el bot de base de datos")
     await deleteBot(modelId);
 
 
-    console.log("retornando el resultado");
+    
     return NextResponse.json({ 
       message: 'Assistant created successfully' 
   });

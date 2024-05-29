@@ -64,8 +64,6 @@ export async function updateFile(fichero: datafichero){
 
 // funcion que devuelve el nombre de los ficheros de un bot
 export async function filesName(ficheroID: string[]) {
-  //debug
-  console.log("filesname");
   try {
     await client.connect();
     const database = client.db("TFM");
@@ -81,8 +79,6 @@ export async function filesName(ficheroID: string[]) {
 }
 // funcion que devuelve el id de fichero bot;
 export async function fileId(ficheroname: string) {
-  //debug
-  console.log("filesId");
   try {
     await client.connect();
     const database = client.db("TFM");
@@ -157,7 +153,6 @@ export async function deleteBot(id: string) {
 
 //actualizar un bot
 export async function updateBot(id:string, datos: dataBot){
-  console.log("data:",datos);
   try{
     await client.connect();
     const database = client.db("TFM");
@@ -180,9 +175,7 @@ export async function updateBot(id:string, datos: dataBot){
 
 // verifica si los datos de bot no son nulos
 export async function isDataNull  (data:dataRequire| datallama)  {
-  console.log("data:", data);
   const isInvalid = Object.values(data).some(value => value === null || value === undefined || value === '');
-  console.log("es válido:", isInvalid);
   if(!isInvalid) return true;
   else return false;
 };
@@ -238,7 +231,6 @@ export async function botData (botId: string | null){
 }
 // funcion que chekear si un correoelectronico es asociado a un bot y si no existe añade 
   export async function addUsers(id: string, correo: any) {
-      console.log("chequeando si existe usuario");
     try {
       await client.connect();
       const database = client.db("TFM");
@@ -397,7 +389,6 @@ export async function getBotList(){
       id: bot.Id,
       name: bot.name
     }));
-    console.log("botList:",botList);
     return botList;
 
   }catch(e){
@@ -440,9 +431,6 @@ export async function getCoversation(data:dataGetConversation){
     const database = client.db("TFM");
     const collection = database.collection("Conversations");
     let query = {};
-    console.log("getConversation user:", data.user);
-    console.log("getConversation Time:", data.Time);
-    console.log("getConversation bot:", data.bot);
     if (data.Time && data.user != 'Todo') {
       const startTime = new Date(data.Time);
       startTime.setUTCHours(0, 0, 0, 0);  
