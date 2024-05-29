@@ -40,7 +40,6 @@
                     setIsLoading(true);
                     try {
                         const hilo = await getHilo(botId, correo);
-                        console.log(hilo);
                         setThreadId(hilo);
                         setIsLoading(false);
                     } catch (error) {
@@ -130,7 +129,6 @@
                     throw new Error(`Error: ${response.status}`);
                   }
                   const data = await response.json();
-                  console.log("data.runId:",data.runId);
                   return data.runId;
                 } catch (error) {
                   console.error('error en ejecutar el asistente:', error.message);
@@ -211,7 +209,6 @@
                                             console.log("error en guardar la conversacion:",e);
                                         }
                                     }
-                                    //console.log("conversacion:",conversacion);
                                 }catch(error){
                                     console.log("error en obtener respuestas:", error);
                                 }

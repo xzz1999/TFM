@@ -26,10 +26,8 @@ export async function DELETE(req: NextRequest) {
   }
 
   try {
-    // eliminar fichero en el openai
-    console.log(`Starting file deletion from OpenAI, File ID: ${fileId}`);
     const deletionStatus = await openai.files.del(fileId);
-    console.log(`File deleted, ID: ${deletionStatus.id}, Status: ${deletionStatus.deleted}`);
+    
 
     return NextResponse.json({ success: deletionStatus.deleted, fileId: deletionStatus.id });
   } catch (error) {

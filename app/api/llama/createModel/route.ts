@@ -21,7 +21,6 @@ export async function POST(req : NextRequest) {
     const tmpDir = '/tmp';
     if (!existsSync(tmpDir)) {
       await mkdir(tmpDir);
-      console.log(`Temporary directory ${tmpDir} created`);
     }
     const filePath = path.join(tmpDir, `Modelfile.txt`);
 
@@ -36,17 +35,13 @@ PARAMETER temperature 1
 SYSTEM """
 ${modelDescription}
 """`;
-    console.log("escribiendo el fichero");
+   
     await writeFile(filePath, fileContent, 'utf-8');
-    console.log("fichero escrito con exito");
-    
-    console.log("creando el modelo")
     const command = `ollama create ${modelId} -f ${filePath}`;
     const { stdout, stderr } = await execPromise(command);
 
     
 
-    console.log("eliminando el fichero");
     await unlink(filePath);
 
     const data = {
@@ -59,7 +54,6 @@ ${modelDescription}
 
      await addBot(data);  
 
-    console.log("retornando el resultado");
     return NextResponse.json({ 
       message: 'Assistant created successfully' 
   });

@@ -41,7 +41,6 @@ const BotList = () => {
     
     } else if (action === 'configure'){
       router.push(`/dashboard/bots/configure/${botId}`)
-      console.log("configurar bot:",botId);
       localStorage.setItem('selectedBotId', botId);
 
     }

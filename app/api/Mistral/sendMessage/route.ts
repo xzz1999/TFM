@@ -31,11 +31,9 @@ export async function POST(req: NextRequest) {
     const responseTime = endTime - startTime;
     if (data.choices && data.choices.length > 0) {
       const respuesta = data.choices[0].message;
-      console.log("respuesta:",respuesta)
       const assistantIndex = respuesta.content.indexOf("assistant");
       if (assistantIndex !== -1) {
       const mensajeParcial = respuesta.content.slice(0, assistantIndex);
-      console.log(mensajeParcial);
       return new NextResponse(JSON.stringify({
         success: 'true',
         data: mensajeParcial,

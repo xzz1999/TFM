@@ -5,16 +5,12 @@ import OpenAI from "openai";
 import { botData } from '@/app/lib/actions';
 
 export async function POST(req: NextRequest) {
-  console.log('CREATE THREAD started');
     const botId = req.headers.get('id');
-    //debug
-    console.log("id:", botId);
     let bot;
     if(botId){
       bot = await botData(botId);
     }
-    // debug
-    console.log("bot:",bot);
+
     if (!bot) {
       console.log('No API key provided');
       return NextResponse.json({ success: false, message: 'API key is required' });
@@ -33,7 +29,6 @@ export async function POST(req: NextRequest) {
   
       const thread = await openai.beta.threads.create();
       const threadId = thread.id;
-      console.log('Thread ID:', threadId);
 
       return NextResponse.json({ threadId });
     } catch (error) {

@@ -51,7 +51,6 @@ export default function ChatBarLlama() {
                 message:question
     
             }
-            console.log("data:",data);
             const response = await fetch('/api/llama/sendMessage', {
                 method: 'POST',
                 headers: {
@@ -60,9 +59,8 @@ export default function ChatBarLlama() {
                 body: JSON.stringify(data)
             });
             const result = await response.json();
-            console.log("result:", result.sucess);
+     
             if (result.data) {
-                console.log("result.response:", result.data)
                 const res = {
                     data: result.data,
                     time:result.time
@@ -89,7 +87,7 @@ export default function ChatBarLlama() {
             };
             
             const response  = await sendMessage(botId,newMessage);
-            console.log("response:",response);
+
                
                 if(response){
                     interaccion.answer = response.data;

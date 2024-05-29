@@ -42,8 +42,6 @@ export async function POST(req: NextRequest) {
         content: input,
       });
      
-     
-      console.log("mensaje creado con exito");
       return NextResponse.json({ message: "Message created successfully" });
       }
    
