@@ -65,7 +65,7 @@ const Page = () => {
     break;
     case  "gpt-3.5-turbo":
     case "gpt-4-1106-preview":
-    case "Gemini 1.0 Pro":
+    case "gemini-1.0-pro":
       const dataToSend = {
         assistantName: name,
         assistantModel: selectAI,
@@ -81,7 +81,7 @@ const Page = () => {
   }
 
     switch (selectAI) {
-      case "Gemini 1.0 Pro":
+      case "gemini-1.0-pro":
         const gid = generateId();
         try {
           const data = {
@@ -89,7 +89,7 @@ const Page = () => {
             name: name,
             ai: selectAI,
             token: token,
-            descripcion: role,
+            role: role,
             file: files
           };
           const add = await addBot(data);
