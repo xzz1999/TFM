@@ -244,7 +244,7 @@
                                                 interaccion.answer = "lo siento, no puedo responderte acerca de esta tema";
                                                 interaccion.responseTime = responseTime;
                                                 setIsProcessing(false);
-                                                setMessages(prevMessages => [...prevMessages, { text: "lo siento, no puedo responderte acerca de esta tema", sender: "bot" }]);
+                                                setMessages(prevMessages => [...prevMessages, { text: "lo siento, no puedo responderte acerca de este tema", sender: "bot" }]);
                                                 await setConversation(interaccion);
 
                                             }
