@@ -23,7 +23,6 @@ export async function POST(req: NextRequest) {
       })
     });
     const data = await response.json();
-    console.log("data:",data)
     if(data.message ==="Validation passed."){
     return new NextResponse(JSON.stringify({
       status: 'sucess',

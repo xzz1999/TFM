@@ -162,8 +162,8 @@ const Page = () => {
             assistantModel: selectAI,
             assistantToken:token,
             assistantDescription: role,
-            ValidTopics: validTopics,
-            InvalidTopics: invalidTopics
+            validTopics: validTopics,
+            invalidTopics: invalidTopics
           };
           for (const file of files) {
             const formData = new FormData();

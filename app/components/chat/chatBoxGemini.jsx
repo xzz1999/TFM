@@ -142,6 +142,12 @@ export default function ChatBarGemini() {
                             setMessages(prevMessages => [...prevMessages, { text: "lo siento, no puedo responderte acerca de esta temas", sender: "bot" }]);  
                             await setConversation(interaccion);
                         }
+                    }else{
+                        interaccion.answer = response.data;
+                        interaccion.responseTime = response.time
+                        setMessages(prevMessages => [...prevMessages, { text: response.data, sender: "bot" }]); 
+                        await setConversation(interaccion);
+
                     }
                 }
             }

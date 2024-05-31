@@ -82,7 +82,6 @@
                     console.error('Error fetching messages:', error);
                 }
             };
-            // ENVIAR MENSAJE A API DE OPENAI
             const enviarMensaje = async (mensaje)=>{
 
                 try {
@@ -109,7 +108,6 @@
                 console.error('Error en la solicitud:', error);
                 }
             }
-            // EJECUTAR ASSISNTENTE EN OPENAI
             const  runAssistant = async (assistantId, threadId) =>{
                 try {
                   
@@ -158,6 +156,7 @@
                 }
               };
               const validate = async (mensaje,topics, invalidTopics) => {
+        
                 try {
                     const dataToSend = {
                         message : mensaje,
@@ -222,13 +221,19 @@
                                     }
         
                                     const mensajes = await fetchMessages(conversation);
+                                   
                                     const endTime = Date.now()
                                     const responseTime = endTime - startTime;
                                     const restricted = await isRestricted(botId)
                                     if(mensajes){
+                                        //debug
+                                        console.log("")
                                         if(restricted){
                                             const bot = await botData(botId);
-                                            const valido = await validate(response.data, bot.validTopics, bot.invalidTopics)
+                                            
+
+                                            const valido = await validate(mensajes, bot.validTopics, bot.invalidTopics)
+                                            
                                             if(valido){
                                                 interaccion.answer = mensajes;
                                                 interaccion.responseTime = responseTime;
@@ -243,6 +248,12 @@
                                                 await setConversation(interaccion);
 
                                             }
+                                        }else{
+                                            interaccion.answer = mensajes;
+                                            interaccion.responseTime = responseTime;
+                                            setIsProcessing(false);
+                                            setMessages(prevMessages => [...prevMessages, { text: mensajes, sender: "bot" }]);
+                                            await setConversation(interaccion);
                                         }
                                         
                                     }
