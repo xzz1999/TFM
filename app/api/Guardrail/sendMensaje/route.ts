@@ -9,35 +9,37 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { modelId, message } = await req.json();
-    const startTime = Date.now();
-    const response = await fetch('http://127.0.0.1:11434/api/chat', {
+    const { topics,invalidTopics, message } = await req.json();
+    const response = await fetch('http://127.0.0.1:5000/validate', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: modelId,
-        messages: [{ "role": "user", "content": message }],
-        stream: false
+        text: message,
+        valid_topics:topics,
+        invalid_topics: invalidTopics
+
       })
     });
     const data = await response.json();
-    const endTime = Date.now();
-    const responseTime = endTime - startTime;
-
+    console.log("data:",data)
+    if(data.message ==="Validation passed."){
     return new NextResponse(JSON.stringify({
-      success: 'true',
-      data: data.message.content,
-      time: responseTime
-    }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      status: 'sucess',
+      data: "mensaje válido"
+    }));
+  }else{
+    return new NextResponse(JSON.stringify({
+      status: 'false',
+      data: "mensaje no válido"
+    })); }
 
   } catch (e) {
     console.error("Error in processing the request:", e);
     return new NextResponse(JSON.stringify({
       success: 'false',
-      message: "error en generar la respuesta de chatbot"
+      message: "error en validar el mensaje"
     }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }

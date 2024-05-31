@@ -3,19 +3,21 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRobot, faTimes, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import "./configure.css";
-import { botData, filesName,updateBot, deleteBot } from '@/app/lib/actions'; 
+import { botData, filesName, updateBot, deleteBot } from '@/app/lib/actions';
 import { lusitana, roboto } from '@/app/components/fonts';
 import { Button } from '@/app/components/button';
-import { useRouter} from 'next/navigation'; 
+import { useRouter } from 'next/navigation';
 
 const BotData = () => {
-  const [bot, setBot] = useState({ id: '', name: '', role: '', fileId: [], token: '', ai: "" });
+  const [bot, setBot] = useState({ id: '', name: '', role: '', fileId: [], token: '', ai: "", validTopics:[], invalidTopics:[] });
   const [botAi, setBotAi] = useState("");
   const [fileNames, setFileNames] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const fileInputRef = useRef(null);
   const [newFiles, setNewFiles] = useState([]);
-  const router = useRouter(); 
+  const [newTopic, setNewTopic] = useState("");
+  const [newNoTopic, setNewNoTopic] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     const fetchBotData = async () => {
@@ -25,7 +27,7 @@ const BotData = () => {
 
         const data = await botData(id);
         if (!data.error) {
-          setBot({ id: data.Id, name: data.name, role: data.role, fileId: data.fileId || [], token: data.token, ai: data.ai });
+          setBot({ id: data.Id, name: data.name, role: data.role, fileId: data.fileId || [], token: data.token, ai: data.ai, validTopics: data.validTopics || [], invalidTopics: data.invalidTopics || [] });
           setBotAi(data.ai);
         } else {
           console.error(data.error);
@@ -59,51 +61,73 @@ const BotData = () => {
 
   const handleRemoveFileName = async (index) => {
     const fileIdToDelete = bot.fileId[index];
-    console.log("deletefile:",fileIdToDelete);
-  
+    console.log("deletefile:", fileIdToDelete);
+
     try {
- 
       const deleteResponse = await fetch('/api/openAI/deleteFile', {
-        method: 'DELETE', 
+        method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
           'key': bot.token,
         },
-
-        body: JSON.stringify({ fileId: fileIdToDelete }), 
+        body: JSON.stringify({ fileId: fileIdToDelete }),
       });
-      
-  
+
       if (!deleteResponse.ok) {
         throw new Error('Network response was not ok during file deletion');
       }
-  
-      
+
       const deleteResult = await deleteResponse.json();
       if (deleteResult.error) {
         console.error('Error deleting file:', deleteResult.error);
-        return; 
+        return;
       }
-  
-      
+
       const newFileNames = fileNames.filter((_, i) => i !== index);
       setFileNames(newFileNames);
       const newFileIds = bot.fileId.filter((_, i) => i !== index);
       setBot(prevBot => ({ ...prevBot, fileId: newFileIds }));
-  
+
       console.log(`File with ID ${fileIdToDelete} was successfully deleted.`);
     } catch (error) {
       console.error('An error occurred:', error);
     }
   };
-  
-  
+
+  const handleRemoveTopics = async (index) => {
+    const newTopics = bot.validTopics.filter((_, i) => i !== index);
+    setBot(prevBot => ({ ...prevBot, validTopics: newTopics }));
+  }
+
+  const handleRemoveNoTopics = async (index) => {
+    const newNoTopics = bot.invalidTopics.filter((_, i) => i !== index);
+    setBot(prevBot => ({ ...prevBot, invalidTopics: newNoTopics }));
+  }
+
   const handleFileChange = (e) => {
     if (e.target.files.length === 0) return;
 
     const file = e.target.files[0];
     setNewFiles(prevFile => [...prevFile, file]);
-    console.log(newFiles,"new file");
+    console.log(newFiles, "new file");
+  };
+
+  const handleTopicChange = (e) => {
+    setNewTopic(e.target.value);
+  };
+
+  const handleNoTopicChange = (e) => {
+    setNewNoTopic(e.target.value);
+  };
+
+  const addNewTopic = () => {
+    setBot(prevBot => ({ ...prevBot, validTopics: [...prevBot.validTopics, newTopic] }));
+    setNewTopic("");
+  };
+
+  const addNewNoTopic = () => {
+    setBot(prevBot => ({ ...prevBot, invalidTopics: [...prevBot.invalidTopics, newNoTopic] }));
+    setNewNoTopic("");
   };
 
   const triggerFileInput = () => {
@@ -113,182 +137,182 @@ const BotData = () => {
   const toggleEdit = () => {
     setIsEditing(!isEditing);
   };
+
   const handleRemoveNewFile = (index) => {
     setNewFiles(currentFiles => currentFiles.filter((_, i) => i !== index));
   };
-  const sendBotDataG =  async() => {
-    console.log("enviando modificaciones de gemini");
-    
-  }
-  
-  const sendBotData =  async() => {
-    console.log("Enviando datos del bot:", bot);
-    switch(botAi){
+
+  const sendBotData = async () => {
+    if(bot.validTopics.length != 0 && bot.invalidTopics.length == 0){
+      window.alert("para restringir temas debes de tener al menos un tema en ser restrigido y válido")
+      return
+    }
+    if(bot.validTopics.length == 0 && bot.invalidTopics.length != 0){
+      window.alert("para restringir temas debes de tener al menos un tema en ser restrigido y válido")
+      return
+    }
+    switch(botAi) {
       case "gpt-3.5-turbo":
       case "gpt-4-1106-preview":  
-      const dataToSend = {
-        Id : bot.id,
-        assistantName: bot.name,
-        assistantModel: bot.ai,
-        assistantDescription: bot.role,
-        assistantToken: bot.token,
-        files:  [...bot.fileId]
-      };
-      try {
-        for (const file of newFiles) {
-          const formData = new FormData();
-          formData.append('file', file); 
-          const uploadResponse = await fetch('/api/openAI/uploadFile', {
+        const dataToSend = {
+          Id: bot.id,
+          assistantName: bot.name,
+          assistantModel: bot.ai,
+          assistantDescription: bot.role,
+          assistantToken: bot.token,
+          files: [...bot.fileId],
+          validTopics: bot.validTopics,
+          invalidTopics: bot.invalidTopics
+        };
+        try {
+          for (const file of newFiles) {
+            const formData = new FormData();
+            formData.append('file', file);
+            const uploadResponse = await fetch('/api/openAI/uploadFile', {
+              method: 'POST',
+              headers: {
+                'key': bot.token,
+              },
+              body: formData,
+            });
+
+            if (!uploadResponse.ok) {
+              throw new Error('Network response was not ok during file upload');
+            }
+            const uploadResult = await uploadResponse.json();
+            console.log("uploadresult:", uploadResult.fileId);
+            if (uploadResult.error) {
+              console.error('Error uploading file:', uploadResult.error);
+              continue;
+            }
+            dataToSend.files.push(uploadResult.fileId);
+          }
+
+          const response = await fetch('/api/openAI/updateAssistant', {
             method: 'POST',
             headers: {
-              'key' : bot.token,
-            } ,
-            body: formData,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(dataToSend),
           });
-    
-          if (!uploadResponse.ok) {
-            throw new Error('Network response was not ok during file upload');
-          }
-          const uploadResult = await uploadResponse.json();
-          console.log("uploadresult:",uploadResult.fileId);
-      if (uploadResult.error) {
-        console.error('Error uploading file:', uploadResult.error);
-        continue; 
-      }
-     
-      dataToSend.files.push(uploadResult.fileId);
-    }
-    
-    
-    try {
-      const response = await fetch('/api/openAI/updateAssistant', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(dataToSend),
-        });
-    
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-    
-        const responseData = await response.json();
-        if (responseData.error) {
-          console.error('Error actualizar assistente:', responseData.error);
-          alert(`Error: ${responseData.error}`); 
-        } else {
-          console.log('assistente actualizado con exito:')
-          alert('se ha actualizado correctamente');
-          window.location.reload();
-        }
-      }catch(error){
-        console.error("Error en actualizar assistente:",error);
-      } 
-  }catch (error) {
-        console.error('Error en actualizar :', error);
-        alert(`Error: ${error.message}`); 
-      }
-  break;
-  case"Gemini 1.0 Pro":
-    const data = {
-    Id: bot.id,
-    name: bot.name,
-    ai: bot.ai,
-    token: bot.token,
-    role: bot.role,
-    fileId: bot.fileId
 
-    }
-    try {
-      const update = await updateBot(bot.id,data);
-      if(update){
-      alert("bot modificado exitosamente");
-      window.location.reload();
-      }
-    }catch(e){
-    alert("error en modificar el bot:",e);
-    }
-    break;
-  case "Mistral-7B":
-    try{
-      const data = {
-        Id: bot.id,
-        name: bot.name,
-        ai: bot.ai,
-        role: bot.role,
-        fileId: bot.fileId
-      }
-      const update = await updateBot(bot.id,data)
-      if(update){
-        alert("bot modificado exitosamente");
-        window.location.reload();
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+
+          const responseData = await response.json();
+          if (responseData.error) {
+            console.error('Error actualizar assistente:', responseData.error);
+            alert(`Error: ${responseData.error}`);
+          } else {
+            console.log('assistente actualizado con exito:');
+            alert('se ha actualizado correctamente');
+            window.location.reload();
+          }
+        } catch (error) {
+          console.error('Error en actualizar :', error);
+          alert(`Error: ${error.message}`);
         }
-      }catch(e){
-      alert("error en modificar el bot:",e);
-      }
-      break;
-    default:
+        break;
+      case "gemini-1.0-pro":
+        const data = {
+          Id: bot.id,
+          name: bot.name,
+          ai: bot.ai,
+          token: bot.token,
+          role: bot.role,
+          fileId: bot.fileId,
+          validTopics: bot.validTopics,
+          invalidTopics: bot.invalidTopics
+        };
+        try {
+          const update = await updateBot(bot.id, data);
+          if (update) {
+            alert("bot modificado exitosamente");
+            window.location.reload();
+          }
+        } catch (e) {
+          alert("error en modificar el bot:", e);
+        }
+        break;
+      case "Mistral-7B":
+        try {
+          const data = {
+            Id: bot.id,
+            name: bot.name,
+            ai: bot.ai,
+            role: bot.role,
+            fileId: bot.fileId,
+            validTopics: bot.validTopics,
+            invalidTopics: bot.invalidTopics
+          };
+          const update = await updateBot(bot.id, data);
+          if (update) {
+            alert("bot modificado exitosamente");
+            window.location.reload();
+          }
+        } catch (e) {
+          alert("error en modificar el bot:", e);
+        }
+        break;
+      default:
         alert("Modelo de IA no soportado o desconocido.");
-      break;
+        break;
     }
   }
 
-    const handleDeleteBot = async () => {
-      console.log("bot ai:", botAi);
-      if (window.confirm('¿Estás seguro de que deseas eliminar este bot?')) {
-        switch(botAi){
-          case "llama3":
-            try {
-              const datal ={ 
-                modelId: bot.id
-              }
-              console.log("modelId", datal);
-              const response = await fetch('/api/llama/deleteModel', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(datal),
-              })
-              if (!response.ok) 
-                throw new Error(data.message);
-              const data = await response.json();
-              if (data.error) {
-                console.error('Error en eliminar assistente:', data.error);
-                alert(`Error: ${data.error}`); 
-                window.location.reload();
-              } else {
-                console.log('assistente eliminado con exito:')
-                alert('se ha eliminado correctamente');
-                router.push('/dashboard/bots')
-              }
-            } catch (error) {
-              alert(`error en eliminar el bot: ${error.message}`);
+  const handleDeleteBot = async () => {
+    console.log("bot ai:", botAi);
+    if (window.confirm('¿Estás seguro de que deseas eliminar este bot?')) {
+      switch(botAi) {
+        case "llama3":
+          try {
+            const datal = {
+              modelId: bot.id
+            };
+            console.log("modelId", datal);
+            const response = await fetch('/api/llama/deleteModel', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(datal),
+            });
+            if (!response.ok)
+              throw new Error(data.message);
+            const data = await response.json();
+            if (data.error) {
+              console.error('Error en eliminar assistente:', data.error);
+              alert(`Error: ${data.error}`);
               window.location.reload();
-            }
-            break;
-          case "gemini-1.0-pro":
-          case "Mistral-7B":
-            try{
-              await deleteBot(bot.id);
+            } else {
+              console.log('assistente eliminado con exito:');
               alert('se ha eliminado correctamente');
               router.push('/dashboard/bots');
-              
-            }catch(e){
-              console.log("error en borrar el bot:",e );
             }
-            break;
-            default:
-              alert("Modelo de IA no soportado o desconocido.");
-            break;
-          } 
+          } catch (error) {
+            alert(`error en eliminar el bot: ${error.message}`);
+            window.location.reload();
+          }
+          break;
+        case "gemini-1.0-pro":
+        case "Mistral-7B":
+          try {
+            await deleteBot(bot.id);
+            alert('se ha eliminado correctamente');
+            router.push('/dashboard/bots');
+          } catch (e) {
+            console.log("error en borrar el bot:", e);
+          }
+          break;
+        default:
+          alert("Modelo de IA no soportado o desconocido.");
+          break;
+      }
     }
-    };
-  
-
+  };
 
   if (!bot.id) return <div>Cargando datos del bot...</div>;
   const isChatGPT = bot.ai === 'gpt-3.5-turbo' || bot.ai === 'gpt-4-1106-preview';
-  const isLlama3  = bot.ai === 'llama3'
+  const isLlama3 = bot.ai === 'llama3';
 
   return (
     <main style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
@@ -302,7 +326,6 @@ const BotData = () => {
           <h2 className={`${roboto.className} mb-20 text-xl md:text-3xl`}>Datos de Bot:</h2>
           {isEditing ? (
             <>
-
               <label>ID: {bot.id}</label><br />
               <label>Nombre:</label>
               <input
@@ -316,6 +339,46 @@ const BotData = () => {
                 value={bot.role}
                 onChange={(e) => handleInputChange(e, 'role')}
               /><br />
+              <div>Temas:</div>
+              {bot.validTopics.map((topic, index) => (
+                <div key={index} className="topic-container">
+                  <span>{topic}</span>
+                  <button className="delete-button" onClick={() => handleRemoveTopics(index)}>
+                    <FontAwesomeIcon icon={faTimes} />
+                  </button>
+                </div>
+              ))}
+              <div className="new-topic-container">
+                <input
+                  type="text"
+                  value={newTopic}
+                  onChange={handleTopicChange}
+                  placeholder="Agregar nuevo tema"
+                />
+                <button className="add-button" onClick={addNewTopic}>
+                  <FontAwesomeIcon icon={faPlus} /> Añadir tema
+                </button>
+              </div>
+              <div>Temas Restringidos:</div>
+              {bot.invalidTopics.map((topic, index) => (
+                <div key={index} className="topic-container">
+                  <span>{topic}</span>
+                  <button className="delete-button" onClick={() => handleRemoveNoTopics(index)}>
+                    <FontAwesomeIcon icon={faTimes} />
+                  </button>
+                </div>
+              ))}
+              <div className="new-topic-container">
+                <input
+                  type="text"
+                  value={newNoTopic}
+                  onChange={handleNoTopicChange}
+                  placeholder="Agregar nuevo tema restringido"
+                />
+                <button className="add-button" onClick={addNewNoTopic}>
+                  <FontAwesomeIcon icon={faPlus} /> Añadir tema restringido
+                </button>
+              </div>
               {isChatGPT && (
                 <div>Archivos Actuales:</div>
               )}
@@ -330,6 +393,16 @@ const BotData = () => {
               <p>ID: {bot.id}</p>
               <p>Nombre: {bot.name}</p>
               <p>Role: {bot.role}</p>
+              <div>Temas:
+                {bot.validTopics.map((topic, index) => (
+                  <p key={index}>{topic}</p>
+                ))}
+              </div>
+              <div>Temas Restringidos:
+                {bot.invalidTopics.map((topic, index) => (
+                  <p key={index}>{topic}</p>
+                ))}
+              </div>
               {isChatGPT && (
                 <div>Archivos Actuales:
                   {fileNames.map((fileName, index) => (
@@ -345,7 +418,7 @@ const BotData = () => {
             </button>
           )}
           {!isLlama3 && (
-          <Button onClick={toggleEdit}>{isEditing ? 'Guardar' : 'Editar'}</Button>
+            <Button onClick={toggleEdit}>{isEditing ? 'Guardar' : 'Editar'}</Button>
           )}
           {isChatGPT && (
             <>
@@ -359,13 +432,11 @@ const BotData = () => {
             </>
           )}
         </div>
-       
-        {!isEditing  && !isLlama3 && (
+        {!isEditing && !isLlama3 && (
           <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '20px' }}>
-            <Button onClick={ sendBotData }>Enviar</Button>
+            <Button onClick={sendBotData}>Enviar</Button>
           </div>
         )}
-        
       </div>
       <input
         type="file"

@@ -5,6 +5,7 @@ import Token from '@/app/components/dashboard/token';
 import Role from '@/app/components/dashboard/role';
 import Name from '@/app/components/dashboard/nombre';
 import Files from '@/app/components/dashboard/archivos';
+import Topics from '@/app/components/dashboard/topic'
 import React, { useState } from 'react';
 import { Button } from '@/app/components/button';
 import { isDataNull } from '@/app/lib/actions';
@@ -18,6 +19,15 @@ const Page = () => {
   const [role, setRole] = useState("");
   const [files, setFiles] = useState([]);
   const [apiSelected, setApiSelected] = useState(false);
+  const [validTopics, setValidTopics] = useState([]);
+  const [invalidTopics, setInvalidTopics] = useState([]);
+
+  const handleConfirmTopics = (valid, invalid) => {
+    setValidTopics(valid);
+    setInvalidTopics(invalid);
+    console.log(valid)
+  };
+
 
   const handleOptionSelected = (selectedOption) => {
     setSelectAI(selectedOption.value);
@@ -89,7 +99,9 @@ const Page = () => {
             ai: selectAI,
             token: token,
             role: role,
-            file: files
+            file: files,
+            validTopics: validTopics,
+            invalidTopics: invalidTopics
           };
           const add = await addBot(data);
           if (add) {
@@ -108,7 +120,9 @@ const Page = () => {
             modelName: name,
             modelAI: selectAI,
             modelDescription: role,
-            file: files
+            file: files,
+            ValidTopics: validTopics,
+            InvalidTopics: invalidTopics
           };
           try{
           const response = await fetch('/api/llama/createModel', {
@@ -147,7 +161,9 @@ const Page = () => {
             assistantName: name,
             assistantModel: selectAI,
             assistantToken:token,
-            assistantDescription: role
+            assistantDescription: role,
+            ValidTopics: validTopics,
+            InvalidTopics: invalidTopics
           };
           for (const file of files) {
             const formData = new FormData();
@@ -207,7 +223,10 @@ const Page = () => {
             name: name,
             ai: selectAI,
             role: role,
-            fileId: files
+            fileId: files,
+            validTopics: validTopics,
+            invalidTopics: invalidTopics
+            
           };
            const add = await addBot(data);
           if (add) {
@@ -270,10 +289,15 @@ const Page = () => {
           <Role onRoleSubmit={handleRoleSubmit} />
           {role && <p>role: {role}</p>}
           <br></br>
+          <h2 className={`${roboto.className} mb-4 text-xl md:text-2xl`}>
+            Topic
+          </h2>
+          <Topics onConfirm={handleConfirmTopics}/>
           <Button onClick={handleCreate} style={{ marginTop: '20px' }}>
             Crear
           </Button>
         </div>
+        
       )}
     </main>
   );
