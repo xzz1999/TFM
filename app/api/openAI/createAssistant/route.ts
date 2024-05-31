@@ -10,7 +10,7 @@ import { addBot } from '@/app/lib/actions';
   export async function POST(req: NextRequest) {
     if (req.method === 'POST') {
         try {
-            const { assistantName, assistantModel, assistantDescription, files, assistantToken} = await req.json();
+            const { assistantName, assistantModel, assistantDescription, files, assistantToken,ValidTopics, InvalidTopics } = await req.json();
 
             const openai = new OpenAI({
                 apiKey: assistantToken,
@@ -32,7 +32,9 @@ import { addBot } from '@/app/lib/actions';
                 ai: assistantModel,
                 token: assistantToken,
                 role:assistantDescription,
-                fileId: files
+                fileId: files,
+                ValidTopics: ValidTopics,
+                InvalidTopics: InvalidTopics
             }
             const actualizar = await addBot(data);
             if(actualizar){

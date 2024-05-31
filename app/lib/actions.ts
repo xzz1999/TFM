@@ -221,7 +221,10 @@ export async function botData (botId: string | null){
         ai: bot.ai,
         token: bot.token,
         role: bot.role,
-        fileId: bot.fileId
+        fileId: bot.fileId,
+        validTopics: bot.validTopics,
+        invalidTopics: bot.invalidTopics
+        
       };
       return botsSerializable;
   }catch(error){
@@ -434,10 +437,8 @@ export async function getCoversation(data:dataGetConversation){
     if (data.Time && data.user != 'Todo') {
       const startTime = new Date(data.Time);
       startTime.setUTCHours(0, 0, 0, 0);  
-      console.log("startTime:",startTime);
       const endTime = new Date(data.Time);
       endTime.setUTCHours(23, 59, 59, 999);
-      console.log("endTime:",endTime);
       query = { 
         bot: data.bot, 
         student : data.user,
@@ -478,5 +479,21 @@ export async function getCoversation(data:dataGetConversation){
     await client.close()
   }
 
+}
+
+// chequear si un bot esta restrigindo por temas
+export async function isRestricted(botid:string){
+  try {
+    const bot = await botData(botid);
+    if(bot?.validTopics.length != 0){
+      return true;
+    }else{
+      return false;
+    }
+  }catch(e){
+    console.log("error en verificar:",e)
+  }
+
+  
 }
 

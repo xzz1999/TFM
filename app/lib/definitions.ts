@@ -16,7 +16,9 @@ export type dataBot = {
   ai: String,
   token: String,
   role: String,
-  fileId: string[]
+  fileId: string[],
+  validTopics: string[],
+  invalidTopics: string[]
 
 }
 

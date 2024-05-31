@@ -4,7 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { getEmail} from '@/app/lib/actions';
 import { BsRobot } from "react-icons/bs";
 import { PiStudent } from "react-icons/pi";
-import { setConversation } from '@/app/lib/actions';
+import { setConversation, isRestricted, botData } from '@/app/lib/actions';
 
 export default function ChatBarLlama() {
     const [messages, setMessages] = useState([]);
@@ -71,6 +71,34 @@ export default function ChatBarLlama() {
             console.error('Error en empezar el chat:', error);
         }
     };
+    const validate = async (mensaje,topics, invalidTopics) => {
+        try {
+            const dataToSend = {
+                message : mensaje,
+                topics: topics,
+                invalidTopics: invalidTopics
+            }
+            const response = await fetch('/api/Guardrail/sendMensaje', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(dataToSend)
+            });
+            const data = await response.json();
+            if (data) {
+                if(data.status === "sucess"){
+                    return true
+                }else{
+                    return false
+                }
+                
+            }
+        } catch (error) {
+            console.error('Error en empezar el chat:', error);
+        }
+    };
+
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
@@ -87,16 +115,29 @@ export default function ChatBarLlama() {
             };
             
             const response  = await sendMessage(botId,newMessage);
-
-               
+            const restricted = await isRestricted(botId)
                 if(response){
-                    interaccion.answer = response.data;
-                    interaccion.responseTime = response.time
-                    setMessages(prevMessages => [...prevMessages, { text: response.data, sender: "bot" }]);  
-
+                    if(restricted){
+                        const bot = await botData(botId);
+                        const valido = await validate(response.data, bot.validTopics, bot.invalidTopics)
+                        if(valido){
+                            interaccion.answer = response.data;
+                            interaccion.responseTime = response.time
+                            setMessages(prevMessages => [...prevMessages, { text: response.data, sender: "bot" }]); 
+                            await setConversation(interaccion);
+                        }else{
+                            interaccion.answer = "lo siento, no puedo responderte acerca de esta tema";
+                            interaccion.responseTime = response.time;
+                            setMessages(prevMessages => [...prevMessages, { text: "lo siento, no puedo responderte acerca de esta temas", sender: "bot" }]);  
+                            await setConversation(interaccion);
+                        }
+                    }
                 }
-            
-            await setConversation(interaccion);
+                            
+                             
+
+           
+
         } catch (error) {   
             console.error('Error en la solicitud:', error);
         } finally {

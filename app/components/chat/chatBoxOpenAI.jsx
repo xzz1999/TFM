@@ -2,7 +2,7 @@
         import './chatBox.css';
         import { useSearchParams } from 'next/navigation';
         import { getEmail,setConversation } from '@/app/lib/actions';
-        import { getHilo } from '@/app/lib/actions';
+        import { getHilo,isRestricted, botData } from '@/app/lib/actions';
         import { BsRobot  } from "react-icons/bs";
         import { PiStudent } from "react-icons/pi";
         
@@ -134,7 +134,6 @@
                   console.error('error en ejecutar el asistente:', error.message);
                 }
               }
-              // CHECKEAR SI EL ASSISTENTE SIGUEN EN EJECUCION
               const checkAssistant = async (threadId, runId) => {
                 try {
                   const requestBody = { runId, threadId };
@@ -158,7 +157,34 @@
          
                 }
               };
-
+              const validate = async (mensaje,topics, invalidTopics) => {
+                try {
+                    const dataToSend = {
+                        message : mensaje,
+                        topics: topics,
+                        invalidTopics: invalidTopics
+                    }
+                    const response = await fetch('/api/Guardrail/sendMensaje', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(dataToSend)
+                    });
+                    const data = await response.json();
+                    if (data) {
+                        if(data.status === "sucess"){
+                            return true
+                        }else{
+                            return false
+                        }
+                        
+                    }
+                } catch (error) {
+                    console.error('Error en empezar el chat:', error);
+                }
+            };
+        
             const handleSendMessage = async (e) => {
                 e.preventDefault();
                 const correo = await getEmail(botId,user);
@@ -198,16 +224,27 @@
                                     const mensajes = await fetchMessages(conversation);
                                     const endTime = Date.now()
                                     const responseTime = endTime - startTime;
+                                    const restricted = await isRestricted(botId)
                                     if(mensajes){
-                                        interaccion.answer = mensajes;
-                                        interaccion.responseTime = responseTime;
-                                        setIsProcessing(false);
-                                        setMessages(prevMessages => [...prevMessages, { text: mensajes, sender: "bot" }]); 
-                                        try{
-                                            await setConversation(interaccion);
-                                        }catch(e){
-                                            console.log("error en guardar la conversacion:",e);
+                                        if(restricted){
+                                            const bot = await botData(botId);
+                                            const valido = await validate(response.data, bot.validTopics, bot.invalidTopics)
+                                            if(valido){
+                                                interaccion.answer = mensajes;
+                                                interaccion.responseTime = responseTime;
+                                                setIsProcessing(false);
+                                                setMessages(prevMessages => [...prevMessages, { text: mensajes, sender: "bot" }]);
+                                                await setConversation(interaccion);
+                                            }else{
+                                                interaccion.answer = "lo siento, no puedo responderte acerca de esta tema";
+                                                interaccion.responseTime = responseTime;
+                                                setIsProcessing(false);
+                                                setMessages(prevMessages => [...prevMessages, { text: "lo siento, no puedo responderte acerca de esta tema", sender: "bot" }]);
+                                                await setConversation(interaccion);
+
+                                            }
                                         }
+                                        
                                     }
                                 }catch(error){
                                     console.log("error en obtener respuestas:", error);
