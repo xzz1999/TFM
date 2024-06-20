@@ -36,7 +36,6 @@ export async function POST(req: NextRequest) {
 
     if (data.choices && data.choices.length > 0) {
       const respuesta = data.choices[0].message;
-      console.log("respuesta:",respuesta)
       const assistantIndex = respuesta.content.indexOf("assistant");
       
       if (assistantIndex !== -1) {
