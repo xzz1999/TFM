@@ -12,11 +12,11 @@ async function postData() {
       messages:  [
         {
           "role": "assistant",
-          "content": "eres profesor de biologia."
+          "content": "eres profesor de historia para alumnos de 2 de bachillerato."
         },
         {
           "role": "user",
-          "content": "que tipo de sangre existe"
+          "content": "¿Quién fue el primer emperador romano?"
         }
       ],
     })
@@ -32,7 +32,7 @@ async function postData() {
       const partialMessage = message.content.slice(0, assistantIndex);
       console.log("Mensaje devuelto:", partialMessage);
     } else {
-      console.log("Mensaje devuelto:",message );
+      console.log("Mensaje devuelto:",message.content );
     }
   } else {
     console.log("No se encontró ningún mensaje en las opciones devueltas.");
