@@ -32,7 +32,7 @@ async function postData() {
       const partialMessage = message.content.slice(0, assistantIndex);
       console.log("Mensaje devuelto:", partialMessage);
     } else {
-      console.log("Mensaje devuelto:",message.content );
+      console.log("Mensaje devuelto:",message );
     }
   } else {
     console.log("No se encontró ningún mensaje en las opciones devueltas.");
