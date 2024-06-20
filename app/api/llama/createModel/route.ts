@@ -26,7 +26,7 @@ export async function POST(req : NextRequest) {
 
    
 
-    const fileContent = `FROM llama3
+    const fileContent = `FROM llama3:70b
 
 # set the temperature to 1 [higher is more creative, lower is more coherent]
 PARAMETER temperature 1
