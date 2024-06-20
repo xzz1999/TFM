@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
       } else {
         return new NextResponse(JSON.stringify({
           success: true,
-          data: respuesta.content,
+          data: respuesta,
           time: responseTime
         }), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
