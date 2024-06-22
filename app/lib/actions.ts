@@ -471,6 +471,7 @@ export async function getCoversation(data:dataGetConversation){
       answer,
       responseTime
     }));
+    console.log("conversaciones:",conversations);
     return conversations;
   }catch(e){
     console.log("error en obtener la conversacion:",e);
