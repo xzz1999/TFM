@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import './chatBox.css';
 import { useSearchParams } from 'next/navigation';
-import { getEmail} from '@/app/lib/actions';
-import { BsRobot } from "react-icons/bs";
+import { getEmail } from '@/app/lib/actions';
+import { BsRobot, BsMic, BsMicFill } from "react-icons/bs";
 import { PiStudent } from "react-icons/pi";
 import { setConversation, isRestricted, botData } from '@/app/lib/actions';
 
@@ -13,15 +13,16 @@ export default function ChatBarLlama() {
     const searchParams = useSearchParams();
     const [botId, setBotId] = useState('');
     const [user, setUser] = useState('');
-    const [email,setEmail] = useState('');
+    const [email, setEmail] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
+    const recognitionRef = useRef(null);
 
     useEffect(() => {
         const botIdValue = searchParams.get('botId') || "";
         const userValue = searchParams.get('user') || "";
         if (!botIdValue || !userValue) {
             console.error("Bot ID o user no encontrado.");
-            
             return;
         }
         setBotId(botIdValue);
@@ -29,11 +30,11 @@ export default function ChatBarLlama() {
     }, [searchParams]);
 
     useEffect(() => {
-        if(!botId || !user) return;
+        if (!botId || !user) return;
         setMessages([{ text: "Hola, ¿en qué puedo ayudarte?", sender: "bot" }]);
         const initThread = async () => {
             try {
-                const correo = await getEmail(botId,user);
+                const correo = await getEmail(botId, user);
                 setEmail(correo);
             } catch (error) {
                 console.error("Error en encontrar email:", error);
@@ -43,13 +44,11 @@ export default function ChatBarLlama() {
         initThread();
     }, [botId, user]);
 
-    const sendMessage = async (id,question) => {
-    
+    const sendMessage = async (id, question) => {
         try {
             const data = {
-                modelId:id,
-                message:question
-    
+                modelId: id,
+                message: question
             }
             const response = await fetch('/api/llama/sendMessage', {
                 method: 'POST',
@@ -59,22 +58,23 @@ export default function ChatBarLlama() {
                 body: JSON.stringify(data)
             });
             const result = await response.json();
-     
+
             if (result.data) {
                 const res = {
                     data: result.data,
-                    time:result.time
+                    time: result.time
                 }
-                return res
+                return res;
             }
         } catch (error) {
-            console.error('Error en empezar el chat:', error);
+            console.error('Error en enviar el mensaje:', error);
         }
     };
-    const validate = async (mensaje,topics, invalidTopics) => {
+
+    const validate = async (mensaje, topics, invalidTopics) => {
         try {
             const dataToSend = {
-                message : mensaje,
+                message: mensaje,
                 topics: topics,
                 invalidTopics: invalidTopics
             }
@@ -87,18 +87,16 @@ export default function ChatBarLlama() {
             });
             const data = await response.json();
             if (data) {
-                if(data.status === "sucess"){
-                    return true
-                }else{
-                    return false
+                if (data.status === "success") {
+                    return true;
+                } else {
+                    return false;
                 }
-                
             }
         } catch (error) {
-            console.error('Error en empezar el chat:', error);
+            console.error('Error en validar el mensaje:', error);
         }
     };
-
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
@@ -113,48 +111,89 @@ export default function ChatBarLlama() {
                 student: email,
                 question: newMessage
             };
-            
-            const response  = await sendMessage(botId,newMessage);
-            const restricted = await isRestricted(botId)
-                if(response){
-                    if(restricted){
-                        const bot = await botData(botId);
-                        const valido = await validate(response.data, bot.validTopics, bot.invalidTopics)
-                        if(valido){
-                            interaccion.answer = response.data;
-                            interaccion.responseTime = response.time
-                            setMessages(prevMessages => [...prevMessages, { text: response.data, sender: "bot" }]); 
-                            await setConversation(interaccion);
-                        }else{
-                            interaccion.answer = "lo siento, no puedo responderte acerca de este tema";
-                            interaccion.responseTime = response.time;
-                            setMessages(prevMessages => [...prevMessages, { text: "lo siento, no puedo responderte acerca de esta temas", sender: "bot" }]);  
-                            await setConversation(interaccion);
-                        }
-                    }else{
+
+            const response = await sendMessage(botId, newMessage);
+            const restricted = await isRestricted(botId);
+            if (response) {
+                if (restricted) {
+                    const bot = await botData(botId);
+                    const valido = await validate(response.data, bot.validTopics, bot.invalidTopics);
+                    if (valido) {
                         interaccion.answer = response.data;
-                        interaccion.responseTime = response.time
-                        setMessages(prevMessages => [...prevMessages, { text: response.data, sender: "bot" }]); 
+                        interaccion.responseTime = response.time;
+                        setMessages(prevMessages => [...prevMessages, { text: response.data, sender: "bot" }]);
                         await setConversation(interaccion);
-
+                    } else {
+                        interaccion.answer = "lo siento, no puedo responderte acerca de este tema";
+                        interaccion.responseTime = response.time;
+                        setMessages(prevMessages => [...prevMessages, { text: "lo siento, no puedo responderte acerca de este tema", sender: "bot" }]);
+                        await setConversation(interaccion);
                     }
+                } else {
+                    interaccion.answer = response.data;
+                    interaccion.responseTime = response.time;
+                    setMessages(prevMessages => [...prevMessages, { text: response.data, sender: "bot" }]);
+                    await setConversation(interaccion);
                 }
-                            
-                             
-
-           
-
-        } catch (error) {   
+            }
+            await setConversation(interaccion);
+        } catch (error) {
             console.error('Error en la solicitud:', error);
         } finally {
             setIsProcessing(false);
-           
         }
     };
 
     useEffect(() => {
         endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
+
+    const startRecording = () => {
+        if (!('webkitSpeechRecognition' in window)) {
+            alert('Tu navegador no soporta la API de reconocimiento de voz');
+            return;
+        }
+
+        const recognition = new window.webkitSpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'es-ES';
+        recognitionRef.current = recognition;
+
+        recognition.onstart = () => {
+            setIsRecording(true);
+        };
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            setNewMessage(transcript);
+        };
+
+        recognition.onend = () => {
+            setIsRecording(false);
+        };
+
+        recognition.onerror = (event) => {
+            console.error('Speech recognition error', event.error);
+            setIsRecording(false);
+        };
+
+        recognition.start();
+    };
+
+    const stopRecording = () => {
+        if (recognitionRef.current) {
+            recognitionRef.current.stop();
+        }
+    };
+
+    const toggleRecording = () => {
+        if (isRecording) {
+            stopRecording();
+        } else {
+            startRecording();
+        }
+    };
 
     return (
         <div className="chat-bar">
@@ -195,6 +234,10 @@ export default function ChatBarLlama() {
                     disabled={isProcessing}
                 />
                 <button type="submit" disabled={!newMessage.trim() || isProcessing}>Enviar</button>
+                <button type="button" onClick={toggleRecording} className={`mic-button ${isRecording ? 'recording' : ''}`}>
+                    {isRecording ? <BsMicFill /> : <BsMic />}
+                    {isRecording && <div className="mic-animation"></div>}
+                </button>
             </form>
         </div>
     );

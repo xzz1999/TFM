@@ -1,108 +1,210 @@
+.chat-bar {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 500px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
 
-    .chat-bar {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        height: 500px;
-        border: 1px solid #ccc;
-        padding: 10px;
-        border-radius: 8px; 
-        background-color: #f9f9f9; 
-    }
+.messages {
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
 
-    .messages {
-        overflow-y: auto;
-        margin-bottom: 10px; 
-    }
+.message-form {
+    display: flex;
+    gap: 10px;
+}
 
-    .message-form {
-        display: flex;
-        gap: 10px;
-    }
+input, button {
+    border-radius: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+}
 
-    input, button {
-        border-radius: 20px; 
-        padding: 10px;
-        border: 1px solid #ddd; 
-    }
+input {
+    flex-grow: 1;
+}
 
-    input {
-        flex-grow: 1;
-    }
+button {
+    background-color: #4CAF50;
+    color: #fff;
+    cursor: pointer;
+}
 
-    button {
-        background-color: #4CAF50; 
-        color:#007bff;
-        cursor: pointer; 
-    }
+button:disabled {
+    background-color: #ddd;
+}
 
-    button:disabled {
-        background-color: #ddd; 
-    }
-    .message {
-        display: flex;
-        align-items: center;
-        margin-bottom: 10px;
-    }
-    
-    .left {
-        justify-content: flex-start;
-    }
-    
-    .right {
-        justify-content: flex-end;
-    }
-    
-    .message p {
-        max-width: 70%;
-        word-wrap: break-word;
-        margin-left: 10px;
-    }
-    .chatbot-icon {
-        margin-right: 8px; 
-    }
-    .chatbot-icon {
-        font-size: 27px;
-    }
-    .user-icon{
-        font-size: 27px;
+.message {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
 
+.left {
+    justify-content: flex-start;
+}
+
+.right {
+    justify-content: flex-end;
+}
+
+.message p {
+    max-width: 70%;
+    word-wrap: break-word;
+    margin-left: 10px;
+}
+
+.chatbot-icon {
+    margin-right: 8px;
+}
+
+.chatbot-icon {
+    font-size: 27px;
+}
+
+.user-icon {
+    font-size: 27px;
+}
+
+.right .user-icon {
+    order: 2;
+}
+
+.right p {
+    order: 1;
+    margin-right: 8px;
+}
+
+.dot-animation {
+    display: flex;
+    align-items: center;
+}
+
+.dot {
+    background-color: #000;
+    border-radius: 50%;
+    width: 8px;
+    height: 8px;
+    margin: 0 4px;
+    animation: dotFlashing 1.5s infinite linear both;
+}
+
+.dot:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.dot:nth-child(2) {
+    animation-delay: 0.5s;
+}
+
+.dot:nth-child(3) {
+    animation-delay: 1s;
+}
+
+@keyframes dotFlashing {
+    0% { background-color: #000; }
+    50%, 100% { background-color: transparent; }
+}
+
+.mic-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: #007bff;
+    position: relative;
+}
+
+.mic-button.recording .mic-animation {
+    display: block;
+}
+
+.mic-animation {
+    display: none;
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    height: 30px;
+    width: 30px;
+    border: 4px solid rgba(255, 0, 0, 0.5);
+    border-radius: 50%;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.9);
+        opacity: 0.7;
     }
-    .right .user-icon {
-        order: 2;
+    70% {
+        transform: scale(1);
+        opacity: 1;
     }
-    
-    .right p {
-        order: 1;
-        margin-right: 8px; 
+    100% {
+        transform: scale(0.9);
+        opacity: 0.7;
     }
-    .dot-animation {
-        display: flex;
-        align-items: center;
-      }
-      
-      .dot {
-        background-color: #000; /* Cambia el color según tu diseño */
-        border-radius: 50%;
-        width: 8px; /* Tamaño del punto */
-        height: 8px; /* Tamaño del punto */
-        margin: 0 4px; /* Espacio entre los puntos */
-        animation: dotFlashing 1.5s infinite linear both;
-      }
-      
-      .dot:nth-child(1) {
-        animation-delay: 0s;
-      }
-      
-      .dot:nth-child(2) {
-        animation-delay: 0.5s;
-      }
-      
-      .dot:nth-child(3) {
-        animation-delay: 1s;
-      }
-      
-      @keyframes dotFlashing {
-        0% { background-color: #000; }
-        50%, 100% { background-color: transparent; }
-      }
+}
+
+.image-upload-label {
+    display: inline-block;
+    cursor: pointer;
+    background-color: #f0f0f0;
+    padding: 10px 20px;
+    border-radius: 5px;
+    border: 1px solid #dcdcdc;
+    transition: background-color 0.3s ease;
+}
+
+.image-upload-label:hover {
+    background-color: #f0f0f0;
+}
+
+.image-upload-label img {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+.image-preview {
+    position: relative;
+    display: inline-block;
+    margin-top: 300px;
+}
+
+.image-preview img {
+    width: 100px;
+    height: auto;
+    border-radius: 5px;
+}
+
+.remove-image-button {
+    position: absolute;
+    top: 0;
+    left: 10%;
+    background-color: transparent;
+    color: red;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.message-image {
+    width: 100px;
+    height: auto;
+    border-radius: 8px;
+    margin-top: 5px;
+    position: relative;
+}
