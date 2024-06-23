@@ -8,19 +8,16 @@ dotenv.config();
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
-
-
-
-
 export async function POST(req: NextRequest) {
   if (req.method !== 'POST') {
     return new NextResponse('Method Not Allowed', { status: 405 });
   }
 
   try {
-    const { message } = await req.json();
+    const { text } = await req.json();
+    const prompt = `Resume el siguiente texto:\n\n${text}`;
     const completion = await openai.chat.completions.create({
-        messages: [{ role: "system", content: message }],
+        messages: [{ role: "system", content: prompt }],
         model: "gpt-3.5-turbo",
       });
     const response_text =completion.choices[0].message.content;
