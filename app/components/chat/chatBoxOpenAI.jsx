@@ -3,14 +3,19 @@ import './chatBox.css';
 import { useSearchParams } from 'next/navigation';
 import { getEmail, setConversation } from '@/app/lib/actions';
 import { getHilo, isRestricted, botData } from '@/app/lib/actions';
-import { BsRobot, BsMic, BsMicFill, BsImage, BsX } from "react-icons/bs";
+import { BsRobot, BsMic, BsMicFill, BsImage, BsX, BsCameraVideo} from "react-icons/bs";
+import { FaRegFilePdf } from "react-icons/fa6";
 import { PiStudent } from "react-icons/pi";
 import axios from 'axios';
+
+
 
 export default function ChatBar() {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [uploadedImage, setUploadedImage] = useState(null);
+    const [videoUrl, setVideoUrl] = useState('');
+    const [showVideoModal, setShowVideoModal] = useState(false);
     const endOfMessagesRef = useRef(null);
     const searchParams = useSearchParams();
     const [botId, setBotId] = useState('');
@@ -196,6 +201,56 @@ export default function ChatBar() {
             return error.message ;
         }
     };
+    const transcriptVideo = async (url) => {
+        try {
+            const dataToSend = {
+                url: url
+            }
+            const response = await fetch('/api/transcriptor', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(dataToSend)
+            });
+            const data = await response.json(); 
+            if (data.status === "error") {
+                return {
+                    status: "error",
+                    message: data.message
+                }
+            
+            }
+            return {
+                status: "success",
+                messages:data.text
+
+            }
+        } catch (error) {
+            return error.message;
+        }
+    }
+    const resumenVideo = async (text) => {
+        try {
+            const dataToSend = {
+                text: text
+            }
+            const response = await fetch('/api/openAI/videoSumary', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(dataToSend)
+            });
+            const data = await response.json();
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            return data.response;
+        } catch (error) {
+            return error.message;
+        }
+    }
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
@@ -205,15 +260,15 @@ export default function ChatBar() {
             Time: new Date(),
             student: correo
         }
-        if (!newMessage.trim() && !uploadedImage) return;
-        setMessages(prevMessages => [...prevMessages, { text: newMessage, sender: "user", image: uploadedImage }]);
+        if (!newMessage.trim() && !uploadedImage && !videoUrl) return;
+        setMessages(prevMessages => [...prevMessages, { text: newMessage, sender: "user", image: uploadedImage, video: videoUrl }]);
         interaccion.question = newMessage;
         setNewMessage('');
         setUploadedImage(null);
+        setVideoUrl('');
         setIsProcessing(true);
 
         try {
-            const startTime = Date.now();
             const mensaje = {
                 'threadId': threadId,
                 'input': newMessage,
@@ -221,10 +276,15 @@ export default function ChatBar() {
             }
 
             let mensajes;
+            let startTime;
+            let endTime;
+            let responseTime;
 
             if (uploadedImage) {
                 const bot = await botData(botId);
+                startTime = Date.now();
                 mensajes = await sendMultimodal(newMessage, uploadedImage, bot.token);
+                endTime = Date.now();
             } else {
                 await enviarMensaje(mensaje);
                 const id = await runAssistant(botId, threadId);
@@ -237,8 +297,7 @@ export default function ChatBar() {
                 }
             }
 
-            const endTime = Date.now();
-            const responseTime = endTime - startTime;
+            responseTime = endTime - startTime;
             const restricted = await isRestricted(botId);
             if (mensajes) {
                 if (restricted) {
@@ -343,6 +402,22 @@ export default function ChatBar() {
         setUploadedImage(null);
     };
 
+    const handleVideoUrlSubmit = async (e) => {
+        e.preventDefault();
+        setShowVideoModal(false);
+        setMessages(prevMessages => [...prevMessages, { text: videoUrl, sender: "user" }]);
+        const text= await transcriptVideo(videoUrl);
+        if(text.status === "error"){
+            setMessages(prevMessages => [...prevMessages, { text: "lo siento, no puede realizar resumen de este texto", sender: "bot" }]);
+            setVideoUrl('');
+            return;
+        }else{
+        const result  = await resumenVideo(text.messages);
+        setMessages(prevMessages => [...prevMessages, { text: result, sender: "bot" }]);
+        setVideoUrl('');
+        }
+    };
+
     if (isLoading) {
         return (
             <div className="loading-screen">
@@ -368,6 +443,7 @@ export default function ChatBar() {
                                 <PiStudent className="user-icon" />
                                 <p>{message.text}</p>
                                 {message.image && <img src={message.image} alt="Uploaded" className="message-image" />}
+                                {message.video && <a href={message.video} target="_blank" rel="noopener noreferrer">Video</a>}
                             </>
                         )}
                     </div>
@@ -392,7 +468,27 @@ export default function ChatBar() {
                     </button>
                 </div>
             )}
+            {showVideoModal && (
+                <div className="modal">
+                    <div className="modal-content">
+                        <span className="close" onClick={() => setShowVideoModal(false)}>&times;</span>
+                        <form onSubmit={handleVideoUrlSubmit}>
+                            <label>Enter Video URL:</label>
+                            <input
+                                type="url"
+                                value={videoUrl}
+                                onChange={(e) => setVideoUrl(e.target.value)}
+                                required
+                            />
+                            <button type="submit" className="submit-button">Enviar</button>
+                        </form>
+                    </div>
+                </div>
+            )}
             <form onSubmit={handleSendMessage} className="message-form">
+                <button type="button" onClick={() => setShowVideoModal(true)} className="video-button">
+                    <BsCameraVideo size={24} />
+                </button>
                 <input
                     type="file"
                     id="image-upload"
@@ -403,14 +499,13 @@ export default function ChatBar() {
                 <label htmlFor="image-upload" className="image-upload-label">
                     <BsImage size={24} />
                 </label>
-
                 <input
                     type="text"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Escribe un mensaje..."
                 />
-                <button type="submit" disabled={!newMessage.trim() && !uploadedImage}>Enviar</button>
+                <button type="submit" disabled={!newMessage.trim() && !uploadedImage && !videoUrl}>Enviar</button>
                 <button type="button" onClick={toggleRecording} className={`mic-button ${isRecording ? 'recording' : ''}`}>
                     {isRecording ? <BsMicFill /> : <BsMic />}
                     {isRecording && <div className="mic-animation"></div>}
