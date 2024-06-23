@@ -1,9 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI("");
-console.log("genAI:", genAI);
-const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
-console.log("model:", model);
+
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
 
 async function chatWithModel() {
   const chat =  model.startChat({
@@ -21,10 +21,9 @@ async function chatWithModel() {
       maxOutputTokens: 100,
     },
   });
-  console.log("chat:", chat);
   const msg = "What's your favorite season of the year?";
   const result = await chat.sendMessage(msg);
-  console.log(result.response.text);
+  console.log(result.text);
 }
 
 chatWithModel();

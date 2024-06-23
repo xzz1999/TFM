@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import './chatBox.css';
 import { useSearchParams } from 'next/navigation';
 import { getEmail } from '@/app/lib/actions';
-import { BsRobot, BsMic, BsMicFill } from "react-icons/bs";
+import { BsRobot, BsMic, BsMicFill,BsCameraVideo } from "react-icons/bs";
 import { PiStudent } from "react-icons/pi";
 import { setConversation, isRestricted, botData } from '@/app/lib/actions';
+
 
 export default function ChatBarMistral() {
     const [messages, setMessages] = useState([]);
@@ -17,6 +18,8 @@ export default function ChatBarMistral() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
     const recognitionRef = useRef(null);
+    const [videoUrl, setVideoUrl] = useState('');
+    const [showVideoModal, setShowVideoModal] = useState(false);
 
     useEffect(() => {
         const botIdValue = searchParams.get('botId') || "";
@@ -96,6 +99,56 @@ export default function ChatBarMistral() {
             console.error('Error en validar el mensaje:', error);
         }
     };
+    const transcriptVideo = async (url) => {
+        try {
+            const dataToSend = {
+                url: url
+            }
+            const response = await fetch('/api/transcriptor', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(dataToSend)
+            });
+            const data = await response.json(); 
+            if (data.status === "error") {
+                return {
+                    status: "error",
+                    message: data.message
+                }
+            
+            }
+            return {
+                status: "success",
+                messages:data.text
+
+            }
+        } catch (error) {
+            return error.message;
+        }
+    }
+    const resumenVideo = async (text) => {
+        try {
+            const dataToSend = {
+                text: text
+            }
+            const response = await fetch('/api/openAI/videoSumary', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(dataToSend)
+            });
+            const data = await response.json();
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            return data.response;
+        } catch (error) {
+            return error.message;
+        }
+    }
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
@@ -192,6 +245,21 @@ export default function ChatBarMistral() {
             startRecording();
         }
     };
+    const handleVideoUrlSubmit = async (e) => {
+        e.preventDefault();
+        setShowVideoModal(false);
+        setMessages(prevMessages => [...prevMessages, { text: videoUrl, sender: "user" }]);
+        const text= await transcriptVideo(videoUrl);
+        if(text.status === "error"){
+            setMessages(prevMessages => [...prevMessages, { text: "lo siento, no puede realizar resumen de este texto", sender: "bot" }]);
+            setVideoUrl('');
+            return;
+        }else{
+        const result  = await resumenVideo(text.messages);
+        setMessages(prevMessages => [...prevMessages, { text: result, sender: "bot" }]);
+        setVideoUrl('');
+        }
+    };
 
     return (
         <div className="chat-bar">
@@ -223,7 +291,27 @@ export default function ChatBarMistral() {
                 )}
                 <div ref={endOfMessagesRef} />
             </div>
+            {showVideoModal && (
+                <div className="modal">
+                    <div className="modal-content">
+                        <span className="close" onClick={() => setShowVideoModal(false)}>&times;</span>
+                        <form onSubmit={handleVideoUrlSubmit}>
+                            <label>Enter Video URL:</label>
+                            <input
+                                type="url"
+                                value={videoUrl}
+                                onChange={(e) => setVideoUrl(e.target.value)}
+                                required
+                            />
+                            <button type="submit" className="submit-button">Enviar</button>
+                        </form>
+                    </div>
+                </div>
+            )}
             <form onSubmit={handleSendMessage} className="message-form">
+            <button type="button" onClick={() => setShowVideoModal(true)} className="video-button">
+                    <BsCameraVideo size={24} />
+                </button>
                 <input
                     type="text"
                     value={newMessage}
