@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { getCoversation, botData } from '@/app/lib/actions';
@@ -25,6 +25,9 @@ const VisualizerComponent = () => {
   const [showStudent, setShowStudent] = useState(false);
   const [summary, setSummary] = useState("");
   const [summaryModalOpen, setSummaryModalOpen] = useState(false);
+  const [adviceModalOpen, setAdviceModalOpen] = useState(false); 
+  const [advice, setAdvice] = useState("");
+
   useEffect(() => {
     const a = searchParams.get('bot');
     const b = searchParams.get('user');
@@ -92,26 +95,46 @@ const VisualizerComponent = () => {
     setSelectedStudent(interactedStudents.values().next().value);
   };
 
+  const handleAdviceButtonClick = async () => {
+    const data = { bot, user:"Todo"};
+    const conversation = await getCoversation(data);
+    let question;
+    if (conversation) {
+      const mensajes = conversation.map((mensaje) => [
+        {
+          text: mensaje.question,
+          student: mensaje.student,
+        }
+      ]).flat();
+      question = "Soy un profesor y estos son las preguntas realizadas por los mis alumnos:\n" + JSON.stringify(mensajes) + "\n " + "dime que conocimientos debo reforzar en mis alumnos";
+      const advise = await getSummary(question);
+      setAdvice(advise);
+      setAdviceModalOpen(true); // Mostrar la ventana emergente de consejo
+    }
+  };
+
   const getSummary = async (message) => {
     try {
       const response = await fetch('/api/openAI/getSummary', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({message:message})
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: message })
       });
       const data = await response.json();
       if (data) {
-          return data.response;
+        return data.response;
       }
-  } catch (error) {
+    } catch (error) {
       console.error('Error en empezar el chat:', error);
-  }
-};
-  const handleClose = () =>{
+    }
+  };
+
+  const handleClose = () => {
     setShowStudent(false);
-  }
+  };
+
   const handleStudentSelectionClose = async () => {
     setShowStudent(false);
     try {
@@ -123,25 +146,34 @@ const VisualizerComponent = () => {
         data = { bot, user, Time: date };
       }
       const iteraciones = await getCoversation(data);
-      let question
-      if(iteraciones){
+      let question;
+      if (iteraciones) {
         const mensajes = iteraciones.map((mensaje) => [
           {
             text: mensaje.question,
             student: mensaje.student,
           }
         ]).flat();
-        question = "dado estos son preguntas realizado por los alumnos:\n" + JSON.stringify(mensajes) + "\n dime el tema principal de las preguntas de los alumnos ";
+        question = "Dado que estas son preguntas realizadas por los alumnos:\n" + JSON.stringify(mensajes) + "\n dime el tema principal de las preguntas de los alumnos ";
         const summary = await getSummary(question);
         setSummary(summary);
-        setSummaryModalOpen(true)
-      }else{
-        window.alert("no hay mensajes para este usuarios")
+        setSummaryModalOpen(true);
+      } else {
+        window.alert("No hay mensajes para este usuario");
       }
 
     } catch (e) {
-      console.log("error en realizar un resumen:", e);
+      console.log("Error en realizar un resumen:", e);
     }
+  };
+
+  const handleDownloadButtonClick = () => {
+    const element = document.createElement('a');
+    const file = new Blob([JSON.stringify(messages, null, 2)], { type: 'text/plain' });
+    element.href = URL.createObjectURL(file);
+    element.download = `conversation_${bot}_${user}_${date}.txt`;
+    document.body.appendChild(element); // Required for this to work in FireFox
+    element.click();
   };
 
   return (
@@ -151,7 +183,11 @@ const VisualizerComponent = () => {
         <p>Total de respuestas recibidas: <span className="stat-value">{totalAnswers}</span></p>
         <p>Tiempo medio de respuesta: <span className="stat-value">{(averageResponseTime / 1000).toFixed(2)} s</span></p>
         <p>Número de alumnos interactuados: <span className="stat-value">{interactedStudents.size}</span></p>
-        <Button onClick={handleSummaryButtonClick} style={{ marginLeft: '100px', background: 'green', color: 'black' }}>Resumen</Button>
+        <div className="buttons-container">
+          <Button onClick={handleSummaryButtonClick} className="summary-button">Resumen</Button>
+          <Button onClick={handleAdviceButtonClick} className="advice-button">Consejo</Button>
+          <Button onClick={handleDownloadButtonClick} className="download-button">Descargar</Button>
+        </div>
       </div>
       {showStudent && (
         <div className="summary-modal">
@@ -178,11 +214,20 @@ const VisualizerComponent = () => {
       )}
       {summaryModalOpen && (
         <div className="summary-modal-container">
-        <div className="summary-modal">
-          <span className="close" onClick={() => setSummaryModalOpen(false)}>&times;</span>
+          <div className="summary-modal">
+            <span className="close" onClick={() => setSummaryModalOpen(false)}>&times;</span>
             <h2 className="summary-title">Resumen:</h2>
-           <p className="summary-content">{summary}</p>
+            <p className="summary-content">{summary}</p>
+          </div>
         </div>
+      )}
+      {adviceModalOpen && (
+        <div className="summary-modal-container">
+          <div className="summary-modal">
+            <span className="close" onClick={() => setAdviceModalOpen(false)}>&times;</span>
+            <h2 className="summary-title">Consejo:</h2>
+            <p className="summary-content">{advice}</p>
+          </div>
         </div>
       )}
       <div className="messages">

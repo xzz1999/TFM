@@ -315,8 +315,8 @@ const BotData = () => {
   const isLlama3 = bot.ai === 'llama3';
 
   return (
-    <main style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-      <div style={{ flex: 1, paddingRight: '20px' }}>
+    <main className="main-container">
+      <div className="bot-info">
         <h1 className={`${lusitana.className} mb-20 text-xl md:text-6xl`}>
           <FontAwesomeIcon icon={faRobot} className="bot-icon" />
           Bot Configuration
@@ -383,8 +383,11 @@ const BotData = () => {
                 <div>Archivos Actuales:</div>
               )}
               {isChatGPT && fileNames.map((fileName, index) => (
-                <div key={index}>
-                  {fileName} <FontAwesomeIcon icon={faTimes} onClick={() => handleRemoveFileName(index)} />
+                <div key={index} className="file-container">
+                  <span>{fileName}</span>
+                  <button className="delete-button" onClick={() => handleRemoveFileName(index)}>
+                    <FontAwesomeIcon icon={faTimes} />
+                  </button>
                 </div>
               ))}
             </>
@@ -413,28 +416,35 @@ const BotData = () => {
             </>
           )}
           {!isChatGPT && (
-            <button onClick={handleDeleteBot} style={{ color: 'red' }}>
+            <button onClick={handleDeleteBot} className="delete-button">
               <FontAwesomeIcon icon={faTrash} /> Delete Bot
             </button>
           )}
           {!isLlama3 && (
-            <Button onClick={toggleEdit}>{isEditing ? 'Guardar' : 'Editar'}</Button>
+            <button onClick={toggleEdit} className="edit-button">
+              {isEditing ? 'Guardar' : 'Editar'}
+            </button>
           )}
           {isChatGPT && (
             <>
               <div>Archivos Nuevos:</div>
               {newFiles.map((file, index) => (
-                <div key={index}>
-                  {file.name} <FontAwesomeIcon icon={faTimes} onClick={() => handleRemoveNewFile(index)} />
+                <div key={index} className="file-container">
+                  <span>{file.name}</span>
+                  <button className="delete-button" onClick={() => handleRemoveNewFile(index)}>
+                    <FontAwesomeIcon icon={faTimes} />
+                  </button>
                 </div>
               ))}
-              <button onClick={triggerFileInput}><FontAwesomeIcon icon={faPlus} /> Añadir archivo</button>
+              <button onClick={triggerFileInput} className="add-button">
+                <FontAwesomeIcon icon={faPlus} /> Añadir archivo
+              </button>
             </>
           )}
         </div>
         {!isEditing && !isLlama3 && (
           <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '20px' }}>
-            <Button onClick={sendBotData}>Enviar</Button>
+            <button onClick={sendBotData} className="save-button">Enviar</button>
           </div>
         )}
       </div>

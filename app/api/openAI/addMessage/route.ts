@@ -8,7 +8,6 @@ export async function POST(req: NextRequest) {
 
         
     const botId = req.headers.get('id');
-  
     let bot;
     if(botId){
       bot = await botData(botId);
@@ -30,9 +29,7 @@ export async function POST(req: NextRequest) {
     const data = await req.json();
     const threadId = data.threadId;
     const input = data.input;
-   
-  
-  
+    console.log("input:", input)
     if (typeof input !== 'string') {
       throw new Error('Input is not a string');
     }

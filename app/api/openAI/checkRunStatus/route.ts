@@ -24,6 +24,7 @@ export async function POST(req: NextRequest) {
   try {
  
     const data = await req.json();
+    console.log("Data received:", data)
     const threadId = data.threadId;
     const runId = data.runId;
 

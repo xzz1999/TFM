@@ -16,17 +16,16 @@ export async function POST(req:Request) {
   
 
   try {
-    // Access your API key as an environment variable.
     const bot = await botData(data.id);
     if (!bot) {
       throw new Error('Bot data not found');
     }
     const genAI = new GoogleGenerativeAI(bot.token);
-    console.log("genAI",genAI)
+  
 
     // Choose a model that's appropriate for your use case.
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    console.log("model",model);
+
 
     const prompt = data.message || "Describeme la imagen";
 
