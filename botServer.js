@@ -13,7 +13,7 @@ const app = express();
 const port = 3003;
 const OPENAI_API_KEY = "";
 
-// Configurar CORS para permitir solicitudes desde localhost:3000
+
 app.use(cors({
     origin: 'http://localhost:3000',
     methods: ['GET', 'POST'],
@@ -21,6 +21,7 @@ app.use(cors({
 }));
 
 app.use(bodyParser.json());
+
 
 const bots = {};
 
