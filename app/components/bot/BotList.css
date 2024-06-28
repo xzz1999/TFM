@@ -1,12 +1,13 @@
-.bot-list {
+/* BotList.css */
+.bot-list-bot {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
   padding: 20px;
-  justify-content: center; 
+  justify-content: center;
 }
 
-.bot-card {
+.bot-card-bot {
   display: flex;
   align-items: center;
   border: 2px solid #0b7bdd;
@@ -20,29 +21,29 @@
   margin-right: 30%;
 }
 
-.bot-card:hover {
+.bot-card-bot:hover {
   transform: scale(1.02);
 }
 
-.bot-icon {
+.bot-icon-bot {
   font-size: 30px; 
   color: #0b7bdd;
   margin-right: 15px; 
 }
 
-.bot-name {
+.bot-name-bot {
   font-size: 22px; 
   font-weight: bold;
   color: #333;
 }
 
-.options-icon {
+.options-icon-bot {
   margin-left: auto;
   cursor: pointer;
   color: #666;
 }
 
-.options-menu {
+.options-menu-bot {
   position: absolute;
   top: 50%;
   left: 100%;
@@ -59,19 +60,19 @@
   transition: opacity 0.2s, visibility 0s 0.2s; 
 }
 
-.bot-card:hover .options-menu {
+.bot-card-bot:hover .options-menu-bot {
   visibility: visible; 
   opacity: 1;
   transition: opacity 0.2s; 
 }
 
-.options-menu.adjust-left {
+.options-menu-bot.adjust-left {
   left: auto; 
   right: 100%; 
   transform: translateY(-50%) translateX(10px);
 }
 
-.chat-sub-options {
+.chat-sub-options-bot {
   position: absolute;
   top: 0;
   left: 100%;
@@ -83,7 +84,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.options-menu button, .chat-sub-options button {
+.options-menu-bot button, .chat-sub-options-bot button {
   display: block;
   width: 100%;
   padding: 8px;
@@ -97,12 +98,11 @@
   transition: background-color 0.3s;
 }
 
-.options-menu button:hover, .chat-sub-options button:hover {
+.options-menu-bot button:hover, .chat-sub-options-bot button:hover {
   background-color: #095a99;
 }
 
-/* Ventana emergente (modal) para mostrar la URL del bot de Telegram */
-.modal {
+.modal-bot {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -115,7 +115,7 @@
   z-index: 1000;
 }
 
-.modal-content {
+.modal-content-bot {
   background-color: #fff;
   padding: 2rem;
   border-radius: 8px;
@@ -126,7 +126,7 @@
   position: relative;
 }
 
-.modal-content .close {
+.modal-content-bot .close {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -134,12 +134,12 @@
   font-size: 20px;
 }
 
-.modal-content p {
+.modal-content-bot p {
   margin-bottom: 1rem;
   color: #333;
 }
 
-.modal-content .copy-button {
+.modal-content-bot .copy-button {
   margin-top: 10px;
   padding: 10px 20px;
   border: none;
@@ -151,6 +151,6 @@
   transition: background-color 0.3s;
 }
 
-.modal-content .copy-button:hover {
+.modal-content-bot .copy-button:hover {
   background-color: #095a99;
 }
