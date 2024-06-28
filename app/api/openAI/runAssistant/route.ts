@@ -32,7 +32,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'API key is required' });
     }
     const token = bot.token;
-    console.log("token:",token);
   
       // Inicializar OpenAI
       const openai = new OpenAI({
@@ -47,7 +46,6 @@ export async function POST(req: NextRequest) {
     });
 
     
-    console.log(`run: ${JSON.stringify(run)}`);
 
     return NextResponse.json({ runId: run.id });
   } catch (error) {

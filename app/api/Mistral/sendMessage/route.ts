@@ -10,6 +10,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const { botId, message } = await req.json();
+    console.log("Mensaje recibido:", botId, message);
     const bot = await botData(botId);
     const role = bot?.role;
     const startTime = Date.now();

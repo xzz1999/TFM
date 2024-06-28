@@ -209,12 +209,18 @@ button:disabled {
     position: relative;
 }
 
-.video-button {
-    background: none;
-    border: none;
+.video-upload-label {
+    display: inline-block;
     cursor: pointer;
-    font-size: 1.5rem;
-    color: #000407;
+    background-color: #f0f0f0;
+    padding: 10px 20px;
+    border-radius: 5px;
+    border: 1px solid #dcdcdc;
+    transition: background-color 0.3s ease;
+}
+
+.video-upload-label:hover {
+    background-color: #f0f0f0;
 }
 
 .modal {
