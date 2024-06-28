@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useEffect, useState } from 'react';
 import { isFreeTelegramBot, setTelegramBot, geturl, getBot } from '@/app/lib/actions';
 import { useRouter } from 'next/navigation'; 
@@ -11,7 +11,7 @@ const BotList = () => {
   const [showOptions, setShowOptions] = useState(null);
   const [showChatOptions, setShowChatOptions] = useState(null);
   const [showChatSubOptions, setShowChatSubOptions] = useState(null);
-  const [botUrl, setBotUrl] = useState(null); // Estado para almacenar la URL del bot
+  const [botUrl, setBotUrl] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -58,16 +58,14 @@ const BotList = () => {
             throw new Error('Network response was not ok');
           }
           const data = await response.json();
-          console.log("data:", data)
           if (data.status === "success") {
             const url = await geturl(telegramBot);
-            console.log("url:", url)
             setBotUrl(url);
             await setTelegramBot(telegramBot, botId);
           }
-        }else{
-          window.alert("No queda disponible. Porfavor, libere algún bot en el panel de telegramBot")
-          window.location.reload()
+        } else {
+          window.alert("No queda disponible. Por favor, libere algún bot en el panel de TelegramBot");
+          window.location.reload();
         }
       } catch (error) {
         console.error('Error creating bot:', error);
@@ -81,14 +79,14 @@ const BotList = () => {
     if (botElement) {
       const rect = botElement.getBoundingClientRect();
       if (rect.right + 150 > window.innerWidth) {
-        return 'options-menu adjust-left'; 
+        return 'options-menu-bot adjust-left'; 
       }
     }
-    return 'options-menu'; 
+    return 'options-menu-bot'; 
   };
 
   const closeModal = () => {
-    setBotUrl(null); // Función para cerrar la ventana emergente (modal)
+    setBotUrl(null);
   };
 
   const copyToClipboard = () => {
@@ -97,21 +95,21 @@ const BotList = () => {
   };
 
   return (
-    <div className="bot-list">
+    <div className="bot-list-bot">
       {bots.map((bot) => (
-        <div key={bot.Id} id={`bot-${bot.Id}`} className="bot-card">
-          <FontAwesomeIcon icon={faRobot} className="bot-icon" />
+        <div key={bot.Id} id={`bot-${bot.Id}`} className="bot-card-bot">
+          <FontAwesomeIcon icon={faRobot} className="bot-icon-bot" />
           <div>
-            <div className="bot-name">{bot.name}</div>
+            <div className="bot-name-bot">{bot.name}</div>
             <div>(ID: {bot.Id})</div>
           </div>
-          <FontAwesomeIcon icon={faEllipsisV} onClick={() => handleOptionsToggle(bot.Id)} className="options-icon" />
+          <FontAwesomeIcon icon={faEllipsisV} onClick={() => handleOptionsToggle(bot.Id)} className="options-icon-bot" />
           {showOptions === bot.Id && (
             <div className={getOptionsMenuClass(bot.Id)}>
               <button onClick={() => handleAction('chat', bot.Id)}>Chat</button>
               <button onClick={() => handleAction('configure', bot.Id)}>Configurar</button>
               {showChatSubOptions === bot.Id && (
-                <div className="chat-sub-options">
+                <div className="chat-sub-options-bot">
                   <button onClick={() => handleChatOption('webpage', bot.Id)}>Webpage</button>
                   <button onClick={() => handleChatOption('telegram', bot.Id)}>Telegram</button>
                 </div>
@@ -121,8 +119,8 @@ const BotList = () => {
         </div>
       ))}
       {botUrl && (
-        <div className="modal">
-          <div className="modal-content">
+        <div className="modal-bot">
+          <div className="modal-content-bot">
             <span className="close" onClick={closeModal}>&times;</span>
             <p>URL del bot de Telegram:</p>
             <p>{botUrl}</p>

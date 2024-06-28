@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { getRunningTele, botData, deleteTelegram } from '@/app/lib/actions';
@@ -53,7 +53,7 @@ const TeleBotList = () => {
   };
 
   return (
-    <div className="bot-list">
+    <div className="telebot-list">
       {isLoading ? (
         <div className="loading-message">Cargando...</div>
       ) : (
@@ -65,16 +65,16 @@ const TeleBotList = () => {
           </div>
         ) : (
           bots.map((bot) => (
-            <div key={bot.token} id={`bot-${bot.token}`} className="bot-card">
-              <TbRobot className="bot-icon" />
+            <div key={bot.token} id={`bot-${bot.token}`} className="telebot-card">
+              <TbRobot className="telebot-icon" />
               <div>
-                <div className="bot-name">{bot.name}</div>
+                <div className="telebot-name">{bot.name}</div>
                 <div>{bot.nombre}</div>
-                <div className="bot-asociado">(Bot asociado: {bot.nombreAsociado})</div>
+                <div className="telebot-asociado">(Bot asociado: {bot.nombreAsociado})</div>
               </div>
-              <FontAwesomeIcon icon={faEllipsisV} onClick={() => handleOptionsToggle(bot.token)} className="options-icon" />
+              <FontAwesomeIcon icon={faEllipsisV} onClick={() => handleOptionsToggle(bot.token)} className="options-icon-telebot" />
               {showOptions === bot.token && (
-                <div className="options-menu">
+                <div className="options-menu-telebot">
                   <button onClick={() => handleDelete(bot.token)}>Eliminar</button>
                 </div>
               )}
