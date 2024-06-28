@@ -47,7 +47,7 @@ const BotList = () => {
       try {
         const telegramBot = await isFreeTelegramBot();
         if (telegramBot) {
-          const response = await fetch('http://localhost:3003/api/createbot', {
+          const response = await fetch('/api/createbot', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
