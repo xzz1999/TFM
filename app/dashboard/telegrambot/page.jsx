@@ -1,5 +1,5 @@
 import { lusitana} from '@/app/components/fonts';
-import TeleBotsList from '@/app/components/telebot/teleBotList';
+import TeleBotsList from '@/app/components/teleBot/teleBotList';
 function teleBotsPage() {
     return (
         <main style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
