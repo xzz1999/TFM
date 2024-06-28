@@ -15,7 +15,7 @@ export async function POST(req : NextRequest) {
   }
 
   try {
-    const { modelName, modelAI, modelDescription, files, modelId } = await req.json();
+    const { modelName, modelAI, modelDescription, files, modelId, ValidTopics, InvalidTopics  } = await req.json();
 
 
     const tmpDir = '/tmp';
@@ -49,7 +49,9 @@ ${modelDescription}
       name: modelName,
       ai: modelAI,
       role: modelDescription,
-      fileId: files
+      fileId: files,
+      validTopics: ValidTopics,
+      invalidTopics: InvalidTopics
     };
 
      await addBot(data);  

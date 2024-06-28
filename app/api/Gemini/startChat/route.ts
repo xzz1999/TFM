@@ -80,7 +80,7 @@ async function sendMessage(data: any) {
 
     try {
         const startTime = Date.now();
-        const result = await chat.sendMessage("hola")
+        const result = await chat.sendMessage(question)
         const response = await result.response;
         const endTime = Date.now();
         const responseTime = endTime - startTime;

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import './chatBox.css';
 import { useSearchParams } from 'next/navigation';
-import { getEmail} from '@/app/lib/actions';
-import { BsRobot } from "react-icons/bs";
+import { getEmail, setConversation, isRestricted, botData } from '@/app/lib/actions';
+import { BsRobot, BsMic, BsMicFill, BsCameraVideo } from "react-icons/bs";
 import { PiStudent } from "react-icons/pi";
-import { setConversation } from '@/app/lib/actions';
+import { FaRegFilePdf } from "react-icons/fa6";
+import axios from 'axios';
 
 export default function ChatBarLlama() {
     const [messages, setMessages] = useState([]);
@@ -13,15 +14,19 @@ export default function ChatBarLlama() {
     const searchParams = useSearchParams();
     const [botId, setBotId] = useState('');
     const [user, setUser] = useState('');
-    const [email,setEmail] = useState('');
+    const [email, setEmail] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
+    const recognitionRef = useRef(null);
+    const [videoUrl, setVideoUrl] = useState('');
+    const [showVideoModal, setShowVideoModal] = useState(false);
+    const [fileToSummary, setFileToSummary] = useState(null);
 
     useEffect(() => {
         const botIdValue = searchParams.get('botId') || "";
         const userValue = searchParams.get('user') || "";
         if (!botIdValue || !userValue) {
-            console.error("Bot ID o user no encontrado.");
-            
+            console.error("Bot ID o usuario no encontrado.");
             return;
         }
         setBotId(botIdValue);
@@ -29,46 +34,116 @@ export default function ChatBarLlama() {
     }, [searchParams]);
 
     useEffect(() => {
-        if(!botId || !user) return;
+        if (!botId || !user) return;
         setMessages([{ text: "Hola, ¿en qué puedo ayudarte?", sender: "bot" }]);
         const initThread = async () => {
             try {
-                const correo = await getEmail(botId,user);
+                const correo = await getEmail(botId, user);
                 setEmail(correo);
             } catch (error) {
-                console.error("Error en encontrar email:", error);
+                console.error("Error al encontrar el email:", error);
             }
         };
-
         initThread();
     }, [botId, user]);
 
-    const sendMessage = async (id,question) => {
-    
+    const transcriptVideo = async (url) => {
         try {
-            const data = {
-                modelId:id,
-                message:question
-    
+            const dataToSend = { url: url };
+            const response = await fetch('/api/transcriptor', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dataToSend)
+            });
+            const data = await response.json();
+            if (data.status === "error") {
+                return { status: "error", message: data.message };
             }
+            return { status: "success", messages: data.text };
+        } catch (error) {
+            return { status: "error", message: error.message };
+        }
+    };
+
+    const resumenVideo = async (text) => {
+        try {
+            const dataToSend = { text: text };
+            const response = await fetch('/api/openAI/videoSummary', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dataToSend)
+            });
+            const data = await response.json();
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            return data.response;
+        } catch (error) {
+            return error.message;
+        }
+    };
+
+    const sendMessage = async (id, question) => {
+        try {
+            const data = { modelId: id, message: question };
             const response = await fetch('/api/llama/sendMessage', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
             const result = await response.json();
-     
             if (result.data) {
-                const res = {
-                    data: result.data,
-                    time:result.time
-                }
-                return res
+                return { data: result.data, time: result.time };
             }
         } catch (error) {
-            console.error('Error en empezar el chat:', error);
+            console.error('Error al enviar el mensaje:', error);
+        }
+    };
+
+    const validate = async (mensaje, topics, invalidTopics) => {
+        try {
+            const dataToSend = { message: mensaje, topics: topics, invalidTopics: invalidTopics };
+            const response = await fetch('/api/Guardrail/sendMensaje', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dataToSend)
+            });
+            const data = await response.json();
+            return data.status === "success";
+        } catch (error) {
+            console.error('Error al validar el mensaje:', error);
+        }
+    };
+
+    const pdfToText = async (file) => {
+        const formData = new FormData();
+        formData.append('pdf', file);
+        try {
+            const response = await axios.post('http://localhost:3001/api/text/upload', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            if (response.status === 200) {
+                return { status: "success", message: response.data.text };
+            } else {
+                return { status: "error", message: response.data.error };
+            }
+        } catch (error) {
+            return { status: "error", message: error.message };
+        }
+    };
+
+    const getResumen = async (texto) => {
+        const dataToSend = { id: botId,text: texto };
+        try {
+            const response = await fetch('/api/Gemini/sumaryPDF', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dataToSend)
+            });
+            const data = await response.json();
+            return data.status === "error" ? { status: "error", message: data.message } : { status: "success", message: data.message };
+        } catch (error) {
+            return { status: "error", message: error.message };
         }
     };
 
@@ -85,29 +160,127 @@ export default function ChatBarLlama() {
                 student: email,
                 question: newMessage
             };
-            
-            const response  = await sendMessage(botId,newMessage);
 
-               
-                if(response){
+            const response = await sendMessage(botId, newMessage);
+            const restricted = await isRestricted(botId);
+            if (response) {
+                if (restricted) {
+                    const bot = await botData(botId);
+                    const valido = await validate(response.data, bot.validTopics, bot.invalidTopics);
+                    if (valido) {
+                        interaccion.answer = response.data;
+                        interaccion.responseTime = response.time;
+                        setMessages(prevMessages => [...prevMessages, { text: response.data, sender: "bot" }]);
+                        await setConversation(interaccion);
+                    } else {
+                        interaccion.answer = "Lo siento, no puedo responderte acerca de este tema.";
+                        interaccion.responseTime = response.time;
+                        setMessages(prevMessages => [...prevMessages, { text: "Lo siento, no puedo responderte acerca de este tema.", sender: "bot" }]);
+                        await setConversation(interaccion);
+                    }
+                } else {
                     interaccion.answer = response.data;
-                    interaccion.responseTime = response.time
-                    setMessages(prevMessages => [...prevMessages, { text: response.data, sender: "bot" }]);  
-
+                    interaccion.responseTime = response.time;
+                    setMessages(prevMessages => [...prevMessages, { text: response.data, sender: "bot" }]);
+                    await setConversation(interaccion);
                 }
-            
+            }
             await setConversation(interaccion);
-        } catch (error) {   
+        } catch (error) {
             console.error('Error en la solicitud:', error);
         } finally {
             setIsProcessing(false);
-           
         }
     };
 
     useEffect(() => {
         endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
+
+    const startRecording = () => {
+        if (!('webkitSpeechRecognition' in window)) {
+            alert('Tu navegador no soporta la API de reconocimiento de voz');
+            return;
+        }
+
+        const recognition = new window.webkitSpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'es-ES';
+        recognitionRef.current = recognition;
+
+        recognition.onstart = () => {
+            setIsRecording(true);
+        };
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            setNewMessage(transcript);
+        };
+
+        recognition.onend = () => {
+            setIsRecording(false);
+        };
+
+        recognition.onerror = (event) => {
+            console.error('Speech recognition error', event.error);
+            setIsRecording(false);
+        };
+
+        recognition.start();
+    };
+
+    const stopRecording = () => {
+        if (recognitionRef.current) {
+            recognitionRef.current.stop();
+        }
+    };
+
+    const toggleRecording = () => {
+        if (isRecording) {
+            stopRecording();
+        } else {
+            startRecording();
+        }
+    };
+
+    const handleVideoUrlSubmit = async (e) => {
+        e.preventDefault();
+        setShowVideoModal(false);
+        setMessages(prevMessages => [...prevMessages, { text: videoUrl, sender: "user" }]);
+        const text = await transcriptVideo(videoUrl);
+        if (text.status === "error") {
+            setMessages(prevMessages => [...prevMessages, { text: "Lo siento, no puede realizar resumen de este texto.", sender: "bot" }]);
+            setVideoUrl('');
+            return;
+        } else {
+            const result = await resumenVideo(text.messages);
+            setMessages(prevMessages => [...prevMessages, { text: result, sender: "bot" }]);
+            setVideoUrl('');
+        }
+    };
+
+    const handlePdfUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setMessages(prevMessages => [...prevMessages, { text: file.name, sender: "user" }]);
+            setFileToSummary(file);
+            const result = await pdfToText(file);
+            if (result && result.status === "success") {
+                const resumen = await getResumen(result.message);
+                console.log("resumen", resumen.status)
+                if(resumen && resumen.status ==="success"){
+                setMessages(prevMessages => [...prevMessages, { text: resumen.message, sender: "bot" }]);
+                }else{
+                console.error("Error al convertir el archivo:", resumen?.message);
+                setMessages(prevMessages => [...prevMessages, { text: "Lo siento, no he sido capaz de resumir el PDF.", sender: "bot" }]);
+                }
+            } else {
+                console.error("Error al convertir el archivo:", result?.message);
+                setMessages(prevMessages => [...prevMessages, { text: "Lo siento, no he sido capaz de resumir el PDF.", sender: "bot" }]);
+            }
+        }
+    };
 
     return (
         <div className="chat-bar">
@@ -139,7 +312,41 @@ export default function ChatBarLlama() {
                 )}
                 <div ref={endOfMessagesRef} />
             </div>
+            {showVideoModal && (
+                <div className="modal">
+                    <div className="modal-content">
+                        <span className="close" onClick={() => setShowVideoModal(false)}>&times;</span>
+                        <form onSubmit={handleVideoUrlSubmit}>
+                            <label>Introduce la URL del video:</label>
+                            <input
+                                type="url"
+                                value={videoUrl}
+                                onChange={(e) => setVideoUrl(e.target.value)}
+                                required
+                            />
+                            <button type="submit" className="submit-button">Enviar</button>
+                        </form>
+                    </div>
+                </div>
+            )}
             <form onSubmit={handleSendMessage} className="message-form">
+            <label className="video-upload-label">
+                    <BsCameraVideo size={24} />
+                    <input
+                        type="button"
+                        onClick={() => setShowVideoModal(true)}
+                        style={{ display: 'none' }}
+                    />
+                </label>
+                <label className="image-upload-label">
+                    <FaRegFilePdf size={24} />
+                    <input
+                        type="file"
+                        accept="application/pdf"
+                        onChange={handlePdfUpload}
+                        style={{ display: 'none' }}
+                    />
+                </label>
                 <input
                     type="text"
                     value={newMessage}
@@ -148,6 +355,10 @@ export default function ChatBarLlama() {
                     disabled={isProcessing}
                 />
                 <button type="submit" disabled={!newMessage.trim() || isProcessing}>Enviar</button>
+                <button type="button" onClick={toggleRecording} className={`mic-button ${isRecording ? 'recording' : ''}`}>
+                    {isRecording ? <BsMicFill /> : <BsMic />}
+                    {isRecording && <div className="mic-animation"></div>}
+                </button>
             </form>
         </div>
     );

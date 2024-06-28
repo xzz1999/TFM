@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'API key is required' });
     }
     const token = bot.token;
-    console.log("token:",token);
+
 
 
     const openai = new OpenAI({
