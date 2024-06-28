@@ -52,8 +52,19 @@ app.post('/api/createbot', async (req, res) => {
             const text = msg.text;
             console.log('Mensaje recibido:', text);
             const username = msg.from.username || 'unknown_user';
+            if (msg.chat.type === 'group' || msg.chat.type === 'supergroup') {
+                const isMentioned = msg.entities && msg.entities.some(entity => 
+                    entity.type === 'mention' && text.substring(entity.offset, entity.offset + entity.length) === `@${botUsername}`);
+                if (!isMentioned) {
+                    return;
+                }
+            }
 
-            if (text === '/start' || text === '/youtube') {
+            if (text === '/start') {
+
+                return;
+            }
+            if  (text === '/youtube') {
                 bot.sendMessage(chatId, 'Por favor, introduce el URL de YouTube:');
                 return;
             }
