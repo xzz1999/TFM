@@ -36,7 +36,13 @@ const TeleBotList = () => {
 
   const handleDelete = async (botToken) => {
     try {
-      const response = await axios.post('http://localhost:3003/api/deleteBot', { token: botToken });
+      const response = await  fetch('/api/deletebot', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ token: botToken })
+      });
       if (response.status !== 200) {
         throw new Error('Network response was not ok');
       }
