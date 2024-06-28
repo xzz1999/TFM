@@ -1,6 +1,8 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { UserGroupIcon, HomeIcon, DocumentDuplicateIcon } from '@heroicons/react/24/outline';
+import { FaTelegram } from "react-icons/fa";
+
 import Link from 'next/link';
 import clsx from 'clsx';
 
@@ -8,6 +10,7 @@ const links = [
   { name: 'Home', href: '/', icon: HomeIcon },
   { name: 'Bots', href: '/dashboard/bots', icon: UserGroupIcon },
   { name: 'conversations', href: '/dashboard/conversations', icon: DocumentDuplicateIcon },
+  {name: 'TelegramBot', href: '/dashboard/telegrambot', icon: FaTelegram}
 ];
 
 export default function NavLinks() {

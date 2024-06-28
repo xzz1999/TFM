@@ -5,6 +5,8 @@ import { getEmail } from '@/app/lib/actions';
 import { BsRobot, BsMic, BsMicFill,BsCameraVideo } from "react-icons/bs";
 import { PiStudent } from "react-icons/pi";
 import { setConversation, isRestricted, botData } from '@/app/lib/actions';
+import { FaRegFilePdf } from "react-icons/fa6";
+import axios from 'axios';
 
 
 export default function ChatBarMistral() {
@@ -46,7 +48,6 @@ export default function ChatBarMistral() {
 
         initThread();
     }, [botId, user]);
-
     const sendMessage = async (id, question) => {
         try {
             const dataToSend = {
@@ -149,6 +150,23 @@ export default function ChatBarMistral() {
             return error.message;
         }
     }
+    
+    const pdfToText = async (file) => {
+        const formData = new FormData();
+        formData.append('pdf', file);
+        try {
+            const response = await axios.post('http://localhost:3001/api/text/upload', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            if (response.status === 200) {
+                return { status: "success", message: response.data.text };
+            } else {
+                return { status: "error", message: response.data.error };
+            }
+        } catch (error) {
+            return { status: "error", message: error.message };
+        }
+    };
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
@@ -260,6 +278,42 @@ export default function ChatBarMistral() {
         setVideoUrl('');
         }
     };
+    const getResumen = async (texto) => {
+        const dataToSend = { id: botId,text: texto };
+        try {
+            const response = await fetch('/api/Gemini/sumaryPDF', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dataToSend)
+            });
+            const data = await response.json();
+            return data.status === "error" ? { status: "error", message: data.message } : { status: "success", message: data.message };
+        } catch (error) {
+            return { status: "error", message: error.message };
+        }
+    };
+    const handlePdfUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setMessages(prevMessages => [...prevMessages, { text: file.name, sender: "user" }]);
+            setFileToSummary(file);
+            const result = await pdfToText(file);
+            if (result && result.status === "success") {
+                const resumen = await getResumen(result.message);
+                console.log("resumen", resumen.status)
+                if(resumen && resumen.status ==="success"){
+                setMessages(prevMessages => [...prevMessages, { text: resumen.message, sender: "bot" }]);
+                }else{
+                console.error("Error al convertir el archivo:", resumen?.message);
+                setMessages(prevMessages => [...prevMessages, { text: "Lo siento, no he sido capaz de resumir el PDF.", sender: "bot" }]);
+                }
+            } else {
+                console.error("Error al convertir el archivo:", result?.message);
+                setMessages(prevMessages => [...prevMessages, { text: "Lo siento, no he sido capaz de resumir el PDF.", sender: "bot" }]);
+            }
+        }
+    };
+
 
     return (
         <div className="chat-bar">
@@ -309,9 +363,23 @@ export default function ChatBarMistral() {
                 </div>
             )}
             <form onSubmit={handleSendMessage} className="message-form">
-            <button type="button" onClick={() => setShowVideoModal(true)} className="video-button">
+            <label className="video-upload-label">
                     <BsCameraVideo size={24} />
-                </button>
+                    <input
+                        type="button"
+                        onClick={() => setShowVideoModal(true)}
+                        style={{ display: 'none' }}
+                    />
+                </label>
+                <label className="image-upload-label">
+                    <FaRegFilePdf size={24} />
+                    <input
+                        type="file"
+                        accept="application/pdf"
+                        onChange={handlePdfUpload}
+                        style={{ display: 'none' }}
+                    />
+                </label>
                 <input
                     type="text"
                     value={newMessage}

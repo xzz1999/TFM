@@ -5,6 +5,7 @@ import { getEmail, setConversation, isRestricted, botData } from '@/app/lib/acti
 import { BsRobot, BsMic, BsMicFill, BsCameraVideo } from "react-icons/bs";
 import { PiStudent } from "react-icons/pi";
 import { FaRegFilePdf } from "react-icons/fa6";
+import axios from 'axios';
 
 export default function ChatBarLlama() {
     const [messages, setMessages] = useState([]);
@@ -25,7 +26,7 @@ export default function ChatBarLlama() {
         const botIdValue = searchParams.get('botId') || "";
         const userValue = searchParams.get('user') || "";
         if (!botIdValue || !userValue) {
-            console.error("Bot ID o user no encontrado.");
+            console.error("Bot ID o usuario no encontrado.");
             return;
         }
         setBotId(botIdValue);
@@ -40,10 +41,9 @@ export default function ChatBarLlama() {
                 const correo = await getEmail(botId, user);
                 setEmail(correo);
             } catch (error) {
-                console.error("Error en encontrar email:", error);
+                console.error("Error al encontrar el email:", error);
             }
         };
-
         initThread();
     }, [botId, user]);
 
@@ -68,7 +68,7 @@ export default function ChatBarLlama() {
     const resumenVideo = async (text) => {
         try {
             const dataToSend = { text: text };
-            const response = await fetch('/api/openAI/videoSumary', {
+            const response = await fetch('/api/openAI/videoSummary', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dataToSend)
@@ -96,7 +96,7 @@ export default function ChatBarLlama() {
                 return { data: result.data, time: result.time };
             }
         } catch (error) {
-            console.error('Error en enviar el mensaje:', error);
+            console.error('Error al enviar el mensaje:', error);
         }
     };
 
@@ -111,49 +111,31 @@ export default function ChatBarLlama() {
             const data = await response.json();
             return data.status === "success";
         } catch (error) {
-            console.error('Error en validar el mensaje:', error);
+            console.error('Error al validar el mensaje:', error);
         }
     };
 
     const pdfToText = async (file) => {
-        console.log("comienzando convertir archivo")
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = async () => {
-            const base64 = reader.result?.toString().split(",")[1];
-            try {
-                const response = await fetch('http://localhost:3001/api/resumir', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ file: base64})
-                });
-                const result = await response.json();
-                return result.status === "error" ? { status: "error", message: result.message } : { status: "success", message: result.message };
-            } catch (error) {
-                return { status: "error", message: error.message };
-            }
-        };
-    };
-
-    const dividirTexto = async (texto) => {
+        const formData = new FormData();
+        formData.append('pdf', file);
         try {
-            const dataToSend = { text: texto };
-            const response = await fetch('/api/FileExtractor/dividirText', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dataToSend)
+            const response = await axios.post('http://localhost:3001/api/text/upload', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
             });
-            const data = await response.json();
-            return data.status === "error" ? { status: "error", message: data.message } : { status: "success", message: data.messages };
+            if (response.status === 200) {
+                return { status: "success", message: response.data.text };
+            } else {
+                return { status: "error", message: response.data.error };
+            }
         } catch (error) {
             return { status: "error", message: error.message };
         }
     };
 
     const getResumen = async (texto) => {
+        const dataToSend = { id: botId,text: texto };
         try {
-            const dataToSend = { text: texto };
-            const response = await fetch('/api/FileExtractor/getResumen', {
+            const response = await fetch('/api/Gemini/sumaryPDF', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dataToSend)
@@ -285,33 +267,20 @@ export default function ChatBarLlama() {
             setFileToSummary(file);
             const result = await pdfToText(file);
             if (result && result.status === "success") {
-                const dividir = await dividirTexto(result.message);
-                if (dividir && dividir.status === "success") {
-                    const textos = dividir.message;
-                    const resumenes = [];
-                    for (const texto of textos) {
-                        const resumen = await getResumen(texto);
-                        if (resumen && resumen.status === "success") {
-                            resumenes.push(resumen.message);
-                        } else {
-                            console.error("Error en obtener resumen:", resumen?.message);
-                            setMessages(prevMessages => [...prevMessages, { text: "Lo siento, no he sido capaz de resumir el PDF.", sender: "bot" }]);
-                            return;
-                        }
-                    }
-                    const finalSummary = resumenes.join("\n");
-                    setMessages(prevMessages => [...prevMessages, { text: finalSummary, sender: "bot" }]);
-                } else {
-                    console.error("Error en dividir el texto:", dividir?.message);
-                    setMessages(prevMessages => [...prevMessages, { text: "Lo siento, no he sido capaz de resumir el PDF.", sender: "bot" }]);
+                const resumen = await getResumen(result.message);
+                console.log("resumen", resumen.status)
+                if(resumen && resumen.status ==="success"){
+                setMessages(prevMessages => [...prevMessages, { text: resumen.message, sender: "bot" }]);
+                }else{
+                console.error("Error al convertir el archivo:", resumen?.message);
+                setMessages(prevMessages => [...prevMessages, { text: "Lo siento, no he sido capaz de resumir el PDF.", sender: "bot" }]);
                 }
             } else {
-                console.error("Error en convertir el archivo:", result?.message);
+                console.error("Error al convertir el archivo:", result?.message);
                 setMessages(prevMessages => [...prevMessages, { text: "Lo siento, no he sido capaz de resumir el PDF.", sender: "bot" }]);
             }
         }
     };
-    
 
     return (
         <div className="chat-bar">
@@ -361,9 +330,14 @@ export default function ChatBarLlama() {
                 </div>
             )}
             <form onSubmit={handleSendMessage} className="message-form">
-                <button type="button" onClick={() => setShowVideoModal(true)} className="video-button">
+            <label className="video-upload-label">
                     <BsCameraVideo size={24} />
-                </button>
+                    <input
+                        type="button"
+                        onClick={() => setShowVideoModal(true)}
+                        style={{ display: 'none' }}
+                    />
+                </label>
                 <label className="image-upload-label">
                     <FaRegFilePdf size={24} />
                     <input

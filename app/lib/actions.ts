@@ -471,7 +471,6 @@ export async function getCoversation(data:dataGetConversation){
       answer,
       responseTime
     }));
-    console.log("conversaciones:",conversations);
     return conversations;
   }catch(e){
     console.log("error en obtener la conversacion:",e);
@@ -496,5 +495,174 @@ export async function isRestricted(botid:string){
   }
 
   
+}
+// chequear si un telegram bot esta libre 
+export async function isFreeTelegramBot() {
+  try {
+
+    await client.connect();
+    const database = client.db("TFM");
+    const collection = database.collection("TelegramBot");
+    const freeBot = await collection.findOne({ botAsociado: "" });
+
+    if (freeBot) {
+      return freeBot.token;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("Error al conectar con la base de datos o al ejecutar la consulta:", error);
+    throw error;
+  } finally {
+    // Cerrar la conexión al cliente de MongoDB
+    await client.close();
+  }
+}
+// funcion para actualizar el bot asociado a un telegram bot
+export async function setTelegramBot(token:string, botId:string) {
+  try {
+
+    await client.connect();
+    const database = client.db("TFM");
+    const collection = database.collection("TelegramBot");
+    const telegramBot = await collection.findOne({ token: token });
+    if (telegramBot) {
+      await collection.updateOne(
+        { token: token },
+        { $set: { botAsociado: botId } }
+      );
+    } else {
+        console.log("No se encontró el bot con el token proporcionado.");
+        return false;
+      }
+  } catch (error) {
+    console.error("Error al conectar con la base de datos o al ejecutar la consulta:", error);
+    throw error;
+  } finally {
+    // Cerrar la conexión al cliente de MongoDB
+    await client.close();
+  }
+}
+// funcion para liberar un telegram bot
+export async function setFreeTelegramBot(token:string) {
+  try {
+
+    await client.connect();
+    const database = client.db("TFM");
+    const collection = database.collection("TelegramBot");
+    const telegramBot = await collection.findOne({ token: token });
+    if (telegramBot) {
+      await collection.updateOne(
+        { token: token },
+        { $set: { botAsociado:"" } }
+      );
+    } else {
+        console.log("No se encontró el bot con el token proporcionado.");
+        return false;
+      }
+  } catch (error) {
+    console.error("Error al conectar con la base de datos o al ejecutar la consulta:", error);
+    throw error;
+  } finally {
+    // Cerrar la conexión al cliente de MongoDB
+    await client.close();
+  }
+}
+// funcion que devuelve el url de telegrambot
+export async function geturl(token:string) {
+  try {
+
+    await client.connect();
+    const database = client.db("TFM");
+    const collection = database.collection("TelegramBot");
+    const telegramBot = await collection.findOne({ token: token });
+    if (telegramBot) {
+      return telegramBot.url;
+    } else {
+        console.log("No se encontró el bot con el token proporcionado.");
+        return false;
+      }
+  } catch (error) {
+    console.error("Error al conectar con la base de datos o al ejecutar la consulta:", error);
+    throw error;
+  } finally {
+    // Cerrar la conexión al cliente de MongoDB
+    await client.close();
+  }
+}
+// funcion que devuelve el botId de bot asociado.
+export async function getBotId(token:string) {
+  try {
+
+    await client.connect();
+    const database = client.db("TFM");
+    const collection = database.collection("TelegramBot");
+    const telegramBot = await collection.findOne({ token: token });
+    if (telegramBot) {
+      return telegramBot.botAsociado;
+    } else {
+        console.log("No se encontró el bot con el token proporcionado.");
+        return false;
+      }
+  } catch (error) {
+    console.error("Error al conectar con la base de datos o al ejecutar la consulta:", error);
+    throw error;
+  } finally {
+    await client.close();
+  }
+}
+// funcion que devuelve los bot de telegram que esta en funcionamiento
+export async function getRunningTele() {
+  try {
+    await client.connect();
+    const database = client.db("TFM");
+    const collection = database.collection("TelegramBot");
+
+    // Consulta para encontrar bots donde botAsociado no esté vacío
+    const query = { botAsociado: { $ne: "" } };
+    const telegramBots = await collection.find(query).toArray();
+
+    if (telegramBots.length > 0) {
+      // Convertir objetos complejos a simples
+      const bots = telegramBots.map(bot => ({
+        id: bot._id.toString(),
+        token: bot.token,
+        url: bot.url,
+        nombre: bot.nombre,
+        botAsociado: bot.botAsociado
+      }));
+      return bots;
+    } else {
+      console.log("No se encontraron bots con botAsociado no vacío.");
+      return [];
+    }
+  } catch (error) {
+    console.error("Error al conectar con la base de datos o al ejecutar la consulta:", error);
+    throw error;
+  } finally {
+    await client.close();
+  }
+}
+// funcion que eliminar el bot de 
+export async function deleteTelegram(token:string) {
+  try {
+
+    await client.connect();
+    const database = client.db("TFM");
+    const collection = database.collection("TelegramBot");
+    const telegramBot = await collection.findOne({ token: token });
+    if (telegramBot) {
+      await collection.updateOne({ token: token }, { $set: { botAsociado: "" } });
+      return true;
+    } else {
+        console.log("No se encontró el bot con el token proporcionado.");
+        return false;
+      }
+  } catch (error) {
+    console.error("Error al conectar con la base de datos o al ejecutar la consulta:", error);
+    throw error;
+  } finally {
+    await client.close();
+  }
 }
 
