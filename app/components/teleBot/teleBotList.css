@@ -65,10 +65,12 @@
   text-align: left;
   cursor: pointer;
   transition: background 0.2s;
+  color: #000;
 }
 
 .options-menu-telebot button:hover {
   background: #f5f5f5;
+  color: #000;
 }
 
 .chat-sub-options-telebot {
