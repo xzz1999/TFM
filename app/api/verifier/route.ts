@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getBotId, botData, addUsers, addThread, getHilo,isRestricted,setConversation } from '@/app/lib/actions';
+import { getBotId, botData } from '@/app/lib/actions';
 export async function POST(req: NextRequest) {
 if (req.method !== 'POST') {
     return new NextResponse('Method Not Allowed', { status: 405 });
