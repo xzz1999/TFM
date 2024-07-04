@@ -4,7 +4,7 @@ const axios = require('axios');
 const ngrok = require('ngrok');
 const TelegramBot = require('node-telegram-bot-api');
 
-const TOKEN = '7244094508:AAFZF59aj20TO_bJ6SujL0QoqOt2BbYOmik';
+const TOKEN = '';
 const bot = new TelegramBot(TOKEN);
 
 const app = express();

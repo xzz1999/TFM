@@ -1,0 +1,8 @@
+{
+  "/api/deletebot/route": "app/api/deletebot/route.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/dashboard/bots/page": "app/dashboard/bots/page.js",
+  "/dashboard/telegrambot/page": "app/dashboard/telegrambot/page.js",
+  "/dashboard/conversations/page": "app/dashboard/conversations/page.js",
+  "/dashboard/conversations/visualizer/page": "app/dashboard/conversations/visualizer/page.js"
+}
