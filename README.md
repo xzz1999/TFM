@@ -1,8 +1,14 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## Versión 2.0 Con la integración de Guardrail AI
+
 
 ## Getting Started
 
-First, run the development server:
+instalación de dependencias:
+```
+npm install
+```
+
+
 
 ```bash
 npm run dev
